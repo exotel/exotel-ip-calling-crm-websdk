@@ -1,0 +1,11 @@
+{
+  "name": "exotel-ip-calling-crm-websdk",
+  "version": "1.0.0",
+  "description": "Exotel's crm websdk for IP calling integration",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Exotel",
+  "license": "Apache-2.0"
+}
