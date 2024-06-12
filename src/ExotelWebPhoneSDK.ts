@@ -28,8 +28,13 @@ interface CallEventData {
   status?: string; // TODO: fix this so that it is no longer optional
 }
 
+type CallEvent = "incoming" | "connected" | "callEnded" | "holdtoggle" | "mutetoggle"
+
+/**
+ * CallListenerCallback is to handle incoming call event
+ */
 interface CallListenerCallback {
-  (event: string, callData: CallEventData): void;
+  (event: CallEvent, callData: CallEventData): void;
 }
 
 export default class ExotelWebPhoneSDK {
@@ -90,7 +95,11 @@ export default class ExotelWebPhoneSDK {
    * @param eventType
    * @param sipInfo
    */
-  #callListenerCallback(callObj: any, eventType: string, sipInfo: SIPAccountInfo) {
+  #callListenerCallback(
+    callObj: any,
+    eventType: CallEvent,
+    sipInfo: SIPAccountInfo
+  ) {
     // let call = this._exWebClient.getCall();
     this.#call = this.#exWebClient.getCall();
     callObj.callFromNumber = this.#exWebClient.callFromNumber;
@@ -111,7 +120,7 @@ export default class ExotelWebPhoneSDK {
     this.#call?.Answer();
   }
 
-  RejectCall() {
+  HangupCall() {
     this.#call?.Hangup();
   }
 
@@ -157,11 +166,17 @@ export default class ExotelWebPhoneSDK {
 
   ToggleHoldButton() {
     this.#call?.HoldToggle();
-    this.#softPhoneCallListenerCallback("holdtoggle", this.#call?.callDetails());
+    this.#softPhoneCallListenerCallback(
+      "holdtoggle",
+      this.#call?.callDetails()
+    );
   }
 
   ToggleMuteButton() {
     this.#call.Mute();
-    this.#softPhoneCallListenerCallback("mutetoggle", this.#call?.callDetails());
+    this.#softPhoneCallListenerCallback(
+      "mutetoggle",
+      this.#call?.callDetails()
+    );
   }
 }
