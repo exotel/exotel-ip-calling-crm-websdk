@@ -31,7 +31,13 @@ export default  class ExotelCRMWebSDK {
   #appSettings: any;
   #userData: User;
 
-  // Initialises CRMWebSDK, Phone Object and registers callbacks
+  /**
+   * Initialize CRMWebSDK, Phone Object and registers callbacks
+   * @param sofPhoneListenerCallback // For incoming calls
+   * @param softPhoneRegisterEventCallBack
+   * @param softPhoneSessionCallback
+   * @returns
+   */
   async Initialize(
     sofPhoneListenerCallback: any,
     softPhoneRegisterEventCallBack = null,
