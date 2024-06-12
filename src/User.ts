@@ -1,5 +1,15 @@
-import { publicKey } from "./Constants";
+import { publicKey } from './Constants';
 import CryptoJS from "crypto-js";
+
+interface ConstructorParams {
+  AppID: string;
+  AppUserId: string;
+  SipSecret: string;
+  SipId: string;
+  ExotelUserName: string;
+  customer_id: string;
+}
+
 export class User {
   private _AppId: string;
   private _AppUserId: string;
@@ -8,13 +18,20 @@ export class User {
   private _customerId: string;
   private _exotelUserName: string;
 
-  constructor({ AppID, AppUserId, SipSecret, SipId, ExotelUserName, customer_id }) {
+  constructor({
+    AppID,
+    AppUserId,
+    SipSecret,
+    SipId,
+    ExotelUserName,
+    customer_id,
+  }: ConstructorParams) {
     this._AppId = AppID;
     this._AppUserId = AppUserId;
     this._EncSipSecret = SipSecret;
     this._SipId = SipId;
     this._customerId = customer_id;
-    this._exotelUserName = ExotelUserName
+    this._exotelUserName = ExotelUserName;
   }
 
   get appId() {
@@ -25,15 +42,16 @@ export class User {
     return this._AppUserId;
   }
 
-  get sipSecret() {
+  get sipSecret(): string {
     try {
       // Decrypt sip secret using public key
       const ciphertext = this._EncSipSecret;
       const keyBytes = CryptoJS.enc.Hex.parse(publicKey);
+
       const iv = CryptoJS.enc.Hex.parse(ciphertext.substring(0, 32));
       const encrypted = ciphertext.substring(32);
       const decrypted = CryptoJS.AES.decrypt(
-        { ciphertext: CryptoJS.enc.Hex.parse(encrypted) },
+        CryptoJS.enc.Hex.parse(encrypted).toString(),
         keyBytes,
         {
           iv: iv,
@@ -45,6 +63,7 @@ export class User {
     } catch (e) {
       console.error("error decrypting sip secret", e);
     }
+    return "";
   }
 
   get sipId() {
@@ -58,5 +77,4 @@ export class User {
   get customerId() {
     return this._customerId;
   }
-
 }

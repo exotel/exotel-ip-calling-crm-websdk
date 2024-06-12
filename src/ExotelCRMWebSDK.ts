@@ -1,15 +1,19 @@
-import { icoreBaseURL, voipDomainSIP, voipDomain } from "./Constants";
+import { icoreBaseURL, voipDomainSIP, voipDomain } from './Constants';
 import { User } from "./User";
 import { SIPAccountInfo } from "./SipAccountInfo";
-import { WebPhoneSDK } from "./WebPhoneSDK";
+import ExotelWebPhoneSDK from "./ExotelWebPhoneSDK";
 
 // Fetches account details, user details, and their settings
-class CRMWebSDK {
+export default  class ExotelCRMWebSDK {
   #accessToken: string;
   #agentUserID: string;
   #autoConnectVOIP: boolean;
 
-  constructor(accesssToken: string, agentUserID: string, autoConnectVOIP: boolean = false) {
+  constructor(
+    accesssToken: string,
+    agentUserID: string,
+    autoConnectVOIP: boolean = false
+  ) {
     if (!accesssToken) {
       console.error("empty access token passed");
       return;
@@ -29,17 +33,17 @@ class CRMWebSDK {
 
   // Initialises CRMWebSDK, Phone Object and registers callbacks
   async Initialize(
-    sofPhoneListenerCallback,
+    sofPhoneListenerCallback: any,
     softPhoneRegisterEventCallBack = null,
     softPhoneSessionCallback = null
-  ): Promise<WebPhoneSDK | void> {
+  ): Promise<ExotelWebPhoneSDK | void> {
     await this.#loadSettings();
     const sipInfo = this.#getSIPInfo();
     if (!sipInfo) {
       return;
     }
 
-    const webPhone = new WebPhoneSDK(this.#accessToken, this.#userData)
+    const webPhone = new ExotelWebPhoneSDK(this.#accessToken, this.#userData);
     return webPhone.Initialize(
       sipInfo,
       sofPhoneListenerCallback,
@@ -87,7 +91,9 @@ class CRMWebSDK {
     // Load user mapping for the tenant
     try {
       const response = await fetch(
-        `${icoreBaseURL}/v2/integrations/usermapping?user_id=${this.#agentUserID}`,
+        `${icoreBaseURL}/v2/integrations/usermapping?user_id=${
+          this.#agentUserID
+        }`,
         {
           method: "GET",
           headers: {
@@ -126,5 +132,3 @@ class CRMWebSDK {
     return sipAccountInfo;
   }
 }
-
-export default CRMWebSDK;

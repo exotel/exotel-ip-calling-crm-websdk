@@ -1,4 +1,6 @@
+// @ts-ignore
 import { ExotelWebClient } from "@exotel-npm-dev/webrtc-client-sdk";
+// @ts-ignore
 import { Call } from "@exotel-npm-dev/webrtc-client-sdk/src/api/callAPI/Call";
 import { User } from "./User";
 import { icoreBaseURL } from "./Constants";
@@ -30,7 +32,7 @@ interface CallListenerCallback {
   (event: string, callData: CallEventData): void;
 }
 
-export class WebPhoneSDK {
+export default class ExotelWebPhoneSDK {
   #accessToken: string;
   #user: User;
 
@@ -40,7 +42,7 @@ export class WebPhoneSDK {
     this.#user = user;
   }
 
-  #softPhoneRegisterEventCallBack;
+  #softPhoneRegisterEventCallBack: any;
   #softPhoneCallListenerCallback: CallListenerCallback;
   #exWebClient: ExotelWebClient;
   #sipInfo: SIPAccountInfo;
@@ -50,8 +52,8 @@ export class WebPhoneSDK {
     sipInfo: SIPAccountInfo,
     softPhoneCallListenerCallback: CallListenerCallback,
     autoConnectVOIP = false,
-    softPhoneRegisterEventCallBack,
-    softPhoneSessionCallback
+    softPhoneRegisterEventCallBack: any,
+    softPhoneSessionCallback: any
   ) {
     this.#sipInfo = sipInfo;
     this.#softPhoneCallListenerCallback = softPhoneCallListenerCallback;
@@ -88,7 +90,7 @@ export class WebPhoneSDK {
    * @param eventType
    * @param sipInfo
    */
-  #callListenerCallback(callObj, eventType, sipInfo: SIPAccountInfo) {
+  #callListenerCallback(callObj: any, eventType: string, sipInfo: SIPAccountInfo) {
     // let call = this._exWebClient.getCall();
     this.#call = this.#exWebClient.getCall();
     callObj.callFromNumber = this.#exWebClient.callFromNumber;
@@ -96,11 +98,11 @@ export class WebPhoneSDK {
     this.#softPhoneCallListenerCallback(eventType, callObj);
   }
 
-  #registerEventCallBack(state, sipInfo: SIPAccountInfo) {
+  #registerEventCallBack(state: string, sipInfo: SIPAccountInfo) {
     this.#softPhoneRegisterEventCallBack(state);
   }
 
-  #sessionCallback(state, sipInfo: SIPAccountInfo) {
+  #sessionCallback(state: string, sipInfo: SIPAccountInfo) {
     console.info("Session state:", state, "for number...", sipInfo);
     this.#softPhoneSessionCallback(state, sipInfo);
   }

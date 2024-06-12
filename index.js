@@ -1,1 +1,1 @@
-export * from './src/CRMWebSDK'
+export * from './src/ExotelCRMWebSDK.ts'
