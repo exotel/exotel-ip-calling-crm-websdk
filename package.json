@@ -3,9 +3,14 @@
   "version": "1.0.0",
   "description": "Exotel's crm websdk for IP calling integration",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Exotel",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@exotel-npm-dev/webrtc-client-sdk": "^1.0.11",
+    "crypto-js": "^4.2.0"
+  }
 }
