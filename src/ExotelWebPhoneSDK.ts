@@ -59,7 +59,7 @@ export default class ExotelWebPhoneSDK {
     autoConnectVOIP = false,
     softPhoneRegisterEventCallBack: any,
     softPhoneSessionCallback: any
-  ) {
+  ): ExotelWebPhoneSDK {
     this.#sipInfo = sipInfo;
     this.#softPhoneCallListenerCallback = softPhoneCallListenerCallback;
     this.#softPhoneRegisterEventCallBack = softPhoneRegisterEventCallBack;
@@ -76,6 +76,8 @@ export default class ExotelWebPhoneSDK {
     if (autoConnectVOIP) {
       this.RegisterDevice();
     }
+
+    return this;
   }
 
   RegisterDevice() {
