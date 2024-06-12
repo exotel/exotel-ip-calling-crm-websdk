@@ -10,20 +10,23 @@ interface MakeCallCallback {
 }
 
 interface CallEventData {
-  callFromNumber: string;
-  status: string;
-  // Add other properties as needed
+  callId: string;
+  remoteId: string;
+  remoteDisplayName: string;
+  callDirection: string;
+  callState: string;
+  callDuration: string;
+  callStartedTime: string;
+  callEstablishedTime: string;
+  callEndedTime: string;
+  callAnswerTime: string;
+  callEndReason: string;
+  sessionId: string;
+  callFromNumber?: string; // TODO: fix this so that it is no longer optional
+  status?: string; // TODO: fix this so that it is no longer optional
 }
 
 interface CallListenerCallback {
-  (event: string, callData: CallEventData): void;
-}
-
-interface RegisterEventCallback {
-  (event: string, callData: CallEventData): void;
-}
-
-interface SessionCallback {
   (event: string, callData: CallEventData): void;
 }
 
@@ -37,7 +40,7 @@ export class WebPhoneSDK {
     this.#user = user;
   }
 
-  #softPhoneRegisterEventCallBack: any;
+  #softPhoneRegisterEventCallBack;
   #softPhoneCallListenerCallback: CallListenerCallback;
   #exWebClient: ExotelWebClient;
   #sipInfo: SIPAccountInfo;
@@ -152,13 +155,11 @@ export class WebPhoneSDK {
 
   ToggleHoldButton() {
     this.#call?.HoldToggle();
-    if (this.#softPhoneCallListenerCallback) {
-      this.#softPhoneCallListenerCallback("holdtoggle", this.#call);
-    }
+    this.#softPhoneCallListenerCallback("holdtoggle", this.#call?.callDetails());
   }
 
   ToggleMuteButton() {
     this.#call.Mute();
-    this.#softPhoneCallListenerCallback("mutetoggle", this.#call);
+    this.#softPhoneCallListenerCallback("mutetoggle", this.#call?.callDetails());
   }
 }
