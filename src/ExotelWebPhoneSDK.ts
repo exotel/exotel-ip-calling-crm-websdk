@@ -171,7 +171,7 @@ export default class ExotelWebPhoneSDK {
     }
   }
 
-  ToggleHoldButton = () => {
+  ToggleHold = () => {
     this.#call?.HoldToggle();
     this._softPhoneCallListenerCallback(
       "holdtoggle",
@@ -179,7 +179,7 @@ export default class ExotelWebPhoneSDK {
     );
   }
 
-  ToggleMuteButton = () => {
+  ToggleMute = () => {
     this.#call.Mute();
     this._softPhoneCallListenerCallback(
       "mutetoggle",
