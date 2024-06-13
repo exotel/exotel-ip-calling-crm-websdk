@@ -45,6 +45,7 @@ export default  class ExotelCRMWebSDK {
   ): Promise<ExotelWebPhoneSDK | void> {
     await this.#loadSettings();
     const sipInfo = this.#getSIPInfo();
+    console.info("sipInfo", {sipInfo});
     if (!sipInfo) {
       return;
     }

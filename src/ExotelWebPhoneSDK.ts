@@ -37,96 +37,101 @@ interface CallListenerCallback {
   (event: CallEvent, callData: CallEventData): void;
 }
 
+interface RegisterListenerCallback {
+  (event: string): void;
+}
+
 export default class ExotelWebPhoneSDK {
   #accessToken: string;
   #user: User;
 
-  //this constructor is invoked when called from ippstn.js,
+  _softPhoneRegisterEventCallBack: RegisterListenerCallback;
+  _softPhoneCallListenerCallback: CallListenerCallback;
+  #exWebClient: ExotelWebClient;
+  #sipInfo: SIPAccountInfo;
+  _softPhoneSessionCallback: any;
+
+  #call: Call;
+
   constructor(accessToken: string, user: User) {
     this.#accessToken = accessToken; // This access token is understood by icore which makes this SDK dependent on it
     this.#user = user;
   }
 
-  #softPhoneRegisterEventCallBack: any;
-  #softPhoneCallListenerCallback: CallListenerCallback;
-  #exWebClient: ExotelWebClient;
-  #sipInfo: SIPAccountInfo;
-  #softPhoneSessionCallback: any;
-
   Initialize(
     sipInfo: SIPAccountInfo,
-    softPhoneCallListenerCallback: CallListenerCallback,
+    callListenerCallback: CallListenerCallback,
     autoConnectVOIP = false,
-    softPhoneRegisterEventCallBack: any,
-    softPhoneSessionCallback: any
+    registerEventCallBack: RegisterListenerCallback | null,
+    sessionCallback: any
   ): ExotelWebPhoneSDK {
     this.#sipInfo = sipInfo;
-    this.#softPhoneCallListenerCallback = softPhoneCallListenerCallback;
-    this.#softPhoneRegisterEventCallBack = softPhoneRegisterEventCallBack;
-    this.#softPhoneSessionCallback = softPhoneSessionCallback;
+    this._softPhoneCallListenerCallback = callListenerCallback;
+    if (registerEventCallBack) {
+      this._softPhoneRegisterEventCallBack = registerEventCallBack;
+    }
+    if (sessionCallback) {
+      this._softPhoneSessionCallback = sessionCallback;
+    }
 
     this.#exWebClient = new ExotelWebClient();
     this.#exWebClient.initWebrtc(
       sipInfo,
-      this.#registerEventCallBack,
-      this.#callListenerCallback,
-      this.#sessionCallback
+      this.RegisterEventCallBack,
+      this.CallListenerCallback,
+      this.SessionCallback
     );
 
     if (autoConnectVOIP) {
       this.RegisterDevice();
     }
-
     return this;
   }
 
-  RegisterDevice() {
+  RegisterDevice = () => {
     this.#exWebClient.DoRegister();
   }
 
-  UnRegisterDevice() {
-    this.#exWebClient.unregister(this.#sipInfo);
+  UnRegisterDevice = () => {
+    this.#exWebClient.UnRegister(this.#sipInfo);
   }
 
-  #call: Call;
-
   /**
-   * _callListenerCallback is a wrapper over the listener callback
+   * #callListenerCallback is a wrapper over the listener callback
    * provided at the time of initialisation to allow us to log stuff
    * @param callObj
    * @param eventType
    * @param sipInfo
    */
-  #callListenerCallback(
+  CallListenerCallback = (
     callObj: any,
     eventType: CallEvent,
     sipInfo: SIPAccountInfo
-  ) {
-    // let call = this._exWebClient.getCall();
+  ) => {
     this.#call = this.#exWebClient.getCall();
     callObj.callFromNumber = this.#exWebClient.callFromNumber;
     console.info(this.#call?.callDetails());
-    this.#softPhoneCallListenerCallback(eventType, callObj);
+    this._softPhoneCallListenerCallback(eventType, callObj);
   }
 
-  #registerEventCallBack(state: string, sipInfo: SIPAccountInfo) {
-    this.#softPhoneRegisterEventCallBack(state);
+  RegisterEventCallBack = (state: string, sipInfo: SIPAccountInfo) => {
+    this._softPhoneRegisterEventCallBack(state);
   }
 
-  #sessionCallback(state: string, sipInfo: SIPAccountInfo) {
-    console.info("Session state:", state, "for number...", sipInfo);
-    this.#softPhoneSessionCallback(state, sipInfo);
+  SessionCallback = (state: string, sipInfo: SIPAccountInfo) => {
+    console.info("SessionCallback", state, "for number...", sipInfo);
+    this._softPhoneSessionCallback(state, sipInfo);
   }
 
-  AcceptCall() {
+  AcceptCall = () => {
     this.#call?.Answer();
   }
 
-  HangupCall() {
+  HangupCall = () => {
     this.#call?.Hangup();
   }
 
-  async MakeCall(number: string, callback: MakeCallCallback) {
+  MakeCall = async (number: string, callback: MakeCallCallback) => {
     const payload = {
       customer_id: this.#user.customerId,
       app_id: this.#user.appId,
@@ -141,7 +146,7 @@ export default class ExotelWebPhoneSDK {
 
     /**
      * We are calling icore here to place a call, which makes this
-     * SDK dependent on icore unfortunately
+     * SDK dependent on icore, unfortunately
      */
     try {
       const response = await fetch(
@@ -166,17 +171,17 @@ export default class ExotelWebPhoneSDK {
     }
   }
 
-  ToggleHoldButton() {
+  ToggleHoldButton = () => {
     this.#call?.HoldToggle();
-    this.#softPhoneCallListenerCallback(
+    this._softPhoneCallListenerCallback(
       "holdtoggle",
       this.#call?.callDetails()
     );
   }
 
-  ToggleMuteButton() {
+  ToggleMuteButton = () => {
     this.#call.Mute();
-    this.#softPhoneCallListenerCallback(
+    this._softPhoneCallListenerCallback(
       "mutetoggle",
       this.#call?.callDetails()
     );

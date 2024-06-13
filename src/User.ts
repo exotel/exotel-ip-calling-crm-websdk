@@ -46,18 +46,16 @@ export class User {
     try {
       // Decrypt sip secret using public key
       const ciphertext = this._EncSipSecret;
+      console.log("_EncSipSecret", { ciphertext });
       const keyBytes = CryptoJS.enc.Hex.parse(publicKey);
 
       const iv = CryptoJS.enc.Hex.parse(ciphertext.substring(0, 32));
       const encrypted = ciphertext.substring(32);
       const decrypted = CryptoJS.AES.decrypt(
-        CryptoJS.enc.Hex.parse(encrypted).toString(),
+        // @ts-ignore
+        { ciphertext: CryptoJS.enc.Hex.parse(encrypted) },
         keyBytes,
-        {
-          iv: iv,
-          padding: CryptoJS.pad.NoPadding,
-          mode: CryptoJS.mode.CFB,
-        }
+        { iv: iv, padding: CryptoJS.pad.NoPadding, mode: CryptoJS.mode.CFB }
       );
       return decrypted.toString(CryptoJS.enc.Utf8);
     } catch (e) {
