@@ -5,8 +5,7 @@
   "main": "output/ExotelCRMWebSDK.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --config webpack.config.js",
-    "compile": "webpack --config webpack.prod.js"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
