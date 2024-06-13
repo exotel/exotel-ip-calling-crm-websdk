@@ -49,11 +49,18 @@ class ExotelCRMWebSDK {
         __classPrivateFieldSet(this, _ExotelCRMWebSDK_agentUserID, agentUserID, "f");
         __classPrivateFieldSet(this, _ExotelCRMWebSDK_autoConnectVOIP, autoConnectVOIP, "f");
     }
-    // Initialises CRMWebSDK, Phone Object and registers callbacks
-    Initialize(sofPhoneListenerCallback_1) {
-        return __awaiter(this, arguments, void 0, function* (sofPhoneListenerCallback, softPhoneRegisterEventCallBack = null, softPhoneSessionCallback = null) {
+    /**
+     * Initialize CRMWebSDK, Phone Object and registers callbacks
+     * @param sofPhoneListenerCallback // For incoming calls
+     * @param softPhoneRegisterEventCallBack
+     * @param softPhoneSessionCallback
+     * @returns
+     */
+    Initialize(sofPhoneListenerCallback, softPhoneRegisterEventCallBack = null, softPhoneSessionCallback = null) {
+        return __awaiter(this, void 0, void 0, function* () {
             yield __classPrivateFieldGet(this, _ExotelCRMWebSDK_instances, "m", _ExotelCRMWebSDK_loadSettings).call(this);
             const sipInfo = __classPrivateFieldGet(this, _ExotelCRMWebSDK_instances, "m", _ExotelCRMWebSDK_getSIPInfo).call(this);
+            console.info("sipInfo", { sipInfo });
             if (!sipInfo) {
                 return;
             }
@@ -62,6 +69,7 @@ class ExotelCRMWebSDK {
         });
     }
 }
+exports.default = ExotelCRMWebSDK;
 _ExotelCRMWebSDK_accessToken = new WeakMap(), _ExotelCRMWebSDK_agentUserID = new WeakMap(), _ExotelCRMWebSDK_autoConnectVOIP = new WeakMap(), _ExotelCRMWebSDK_app = new WeakMap(), _ExotelCRMWebSDK_appSettings = new WeakMap(), _ExotelCRMWebSDK_userData = new WeakMap(), _ExotelCRMWebSDK_instances = new WeakSet(), _ExotelCRMWebSDK_loadSettings = function _ExotelCRMWebSDK_loadSettings() {
     return __awaiter(this, void 0, void 0, function* () {
         // Load app
@@ -119,16 +127,16 @@ _ExotelCRMWebSDK_accessToken = new WeakMap(), _ExotelCRMWebSDK_agentUserID = new
         return;
     }
     const sipAccountInfo = {
-        userName: __classPrivateFieldGet(this, _ExotelCRMWebSDK_userData, "f").sipId.split(":")[1], // sipInfo.Username,
-        authUser: __classPrivateFieldGet(this, _ExotelCRMWebSDK_userData, "f").sipId.split(":")[1], //sipInfo.Username,
-        sipdomain: __classPrivateFieldGet(this, _ExotelCRMWebSDK_app, "f").ExotelAccountSid + "." + Constants_1.voipDomainSIP, //sipInfo.Domain,
-        domain: Constants_1.voipDomain + ":443", // sipInfo.HostServer + ":" + sipInfo.Port,
-        displayname: __classPrivateFieldGet(this, _ExotelCRMWebSDK_userData, "f").exotelUserName, //sipInfo.DisplayName,
-        secret: __classPrivateFieldGet(this, _ExotelCRMWebSDK_userData, "f").sipSecret, //sipInfo.Password,
-        port: "443", //sipInfo.Port,
-        security: "wss", //sipInfo.Security,
+        userName: __classPrivateFieldGet(this, _ExotelCRMWebSDK_userData, "f").sipId.split(":")[1],
+        authUser: __classPrivateFieldGet(this, _ExotelCRMWebSDK_userData, "f").sipId.split(":")[1],
+        sipdomain: __classPrivateFieldGet(this, _ExotelCRMWebSDK_app, "f").ExotelAccountSid + "." + Constants_1.voipDomainSIP,
+        domain: Constants_1.voipDomain + ":443",
+        displayname: __classPrivateFieldGet(this, _ExotelCRMWebSDK_userData, "f").exotelUserName,
+        secret: __classPrivateFieldGet(this, _ExotelCRMWebSDK_userData, "f").sipSecret,
+        port: "443",
+        security: "wss",
         endpoint: "wss", //sipInfo.EndPoint
     };
     return sipAccountInfo;
 };
-exports.default = ExotelCRMWebSDK;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiRXhvdGVsQ1JNV2ViU0RLLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vc3JjL0V4b3RlbENSTVdlYlNESy50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLDJDQUFzRTtBQUN0RSxpQ0FBOEI7QUFFOUIsNEVBQW9EO0FBRXBELDREQUE0RDtBQUM1RCxNQUFzQixlQUFlO0lBS25DLFlBQ0UsWUFBb0IsRUFDcEIsV0FBbUIsRUFDbkIsa0JBQTJCLEtBQUs7O1FBUGxDLCtDQUFxQjtRQUNyQiwrQ0FBcUI7UUFDckIsbURBQTBCO1FBb0IxQix1Q0FBbUM7UUFDbkMsK0NBQWtCO1FBQ2xCLDRDQUFnQjtRQWZkLElBQUksQ0FBQyxZQUFZLEVBQUU7WUFDakIsT0FBTyxDQUFDLEtBQUssQ0FBQywyQkFBMkIsQ0FBQyxDQUFDO1lBQzNDLE9BQU87U0FDUjtRQUNELElBQUksQ0FBQyxXQUFXLEVBQUU7WUFDaEIsT0FBTyxDQUFDLEtBQUssQ0FBQywwQkFBMEIsQ0FBQyxDQUFDO1lBQzFDLE9BQU87U0FDUjtRQUNELHVCQUFBLElBQUksZ0NBQWdCLFlBQVksTUFBQSxDQUFDO1FBQ2pDLHVCQUFBLElBQUksZ0NBQWdCLFdBQVcsTUFBQSxDQUFDO1FBQ2hDLHVCQUFBLElBQUksb0NBQW9CLGVBQWUsTUFBQSxDQUFDO0lBQzFDLENBQUM7SUFNRDs7Ozs7O09BTUc7SUFDRyxVQUFVLENBQ2Qsd0JBQTZCLEVBQzdCLDhCQUE4QixHQUFHLElBQUksRUFDckMsd0JBQXdCLEdBQUcsSUFBSTs7WUFFL0IsTUFBTSx1QkFBQSxJQUFJLGlFQUFjLE1BQWxCLElBQUksQ0FBZ0IsQ0FBQztZQUMzQixNQUFNLE9BQU8sR0FBRyx1QkFBQSxJQUFJLCtEQUFZLE1BQWhCLElBQUksQ0FBYyxDQUFDO1lBQ25DLE9BQU8sQ0FBQyxJQUFJLENBQUMsU0FBUyxFQUFFLEVBQUMsT0FBTyxFQUFDLENBQUMsQ0FBQztZQUNuQyxJQUFJ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

@@ -19,53 +19,54 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _ExotelWebPhoneSDK_instances, _ExotelWebPhoneSDK_accessToken, _ExotelWebPhoneSDK_user, _ExotelWebPhoneSDK_softPhoneRegisterEventCallBack, _ExotelWebPhoneSDK_softPhoneCallListenerCallback, _ExotelWebPhoneSDK_exWebClient, _ExotelWebPhoneSDK_sipInfo, _ExotelWebPhoneSDK_softPhoneSessionCallback, _ExotelWebPhoneSDK_call, _ExotelWebPhoneSDK_callListenerCallback, _ExotelWebPhoneSDK_registerEventCallBack, _ExotelWebPhoneSDK_sessionCallback;
+var _ExotelWebPhoneSDK_accessToken, _ExotelWebPhoneSDK_user, _ExotelWebPhoneSDK_exWebClient, _ExotelWebPhoneSDK_sipInfo, _ExotelWebPhoneSDK_call;
 Object.defineProperty(exports, "__esModule", { value: true });
 // @ts-ignore
 const webrtc_client_sdk_1 = require("@exotel-npm-dev/webrtc-client-sdk");
 const Constants_1 = require("./Constants");
 class ExotelWebPhoneSDK {
-    //this constructor is invoked when called from ippstn.js,
     constructor(accessToken, user) {
-        _ExotelWebPhoneSDK_instances.add(this);
         _ExotelWebPhoneSDK_accessToken.set(this, void 0);
         _ExotelWebPhoneSDK_user.set(this, void 0);
-        _ExotelWebPhoneSDK_softPhoneRegisterEventCallBack.set(this, void 0);
-        _ExotelWebPhoneSDK_softPhoneCallListenerCallback.set(this, void 0);
         _ExotelWebPhoneSDK_exWebClient.set(this, void 0);
         _ExotelWebPhoneSDK_sipInfo.set(this, void 0);
-        _ExotelWebPhoneSDK_softPhoneSessionCallback.set(this, void 0);
         _ExotelWebPhoneSDK_call.set(this, void 0);
-        __classPrivateFieldSet(this, _ExotelWebPhoneSDK_accessToken, accessToken, "f"); // This access token is understood by icore which makes this SDK dependent on it
-        __classPrivateFieldSet(this, _ExotelWebPhoneSDK_user, user, "f");
-    }
-    Initialize(sipInfo, softPhoneCallListenerCallback, autoConnectVOIP = false, softPhoneRegisterEventCallBack, softPhoneSessionCallback) {
-        __classPrivateFieldSet(this, _ExotelWebPhoneSDK_sipInfo, sipInfo, "f");
-        __classPrivateFieldSet(this, _ExotelWebPhoneSDK_softPhoneCallListenerCallback, softPhoneCallListenerCallback, "f");
-        __classPrivateFieldSet(this, _ExotelWebPhoneSDK_softPhoneRegisterEventCallBack, softPhoneRegisterEventCallBack, "f");
-        __classPrivateFieldSet(this, _ExotelWebPhoneSDK_softPhoneSessionCallback, softPhoneSessionCallback, "f");
-        __classPrivateFieldSet(this, _ExotelWebPhoneSDK_exWebClient, new webrtc_client_sdk_1.ExotelWebClient(), "f");
-        __classPrivateFieldGet(this, _ExotelWebPhoneSDK_exWebClient, "f").initWebrtc(sipInfo, __classPrivateFieldGet(this, _ExotelWebPhoneSDK_instances, "m", _ExotelWebPhoneSDK_registerEventCallBack), __classPrivateFieldGet(this, _ExotelWebPhoneSDK_instances, "m", _ExotelWebPhoneSDK_callListenerCallback), __classPrivateFieldGet(this, _ExotelWebPhoneSDK_instances, "m", _ExotelWebPhoneSDK_sessionCallback));
-        if (autoConnectVOIP) {
-            this.RegisterDevice();
-        }
-    }
-    RegisterDevice() {
-        __classPrivateFieldGet(this, _ExotelWebPhoneSDK_exWebClient, "f").DoRegister();
-    }
-    UnRegisterDevice() {
-        __classPrivateFieldGet(this, _ExotelWebPhoneSDK_exWebClient, "f").unregister(__classPrivateFieldGet(this, _ExotelWebPhoneSDK_sipInfo, "f"));
-    }
-    AcceptCall() {
-        var _a;
-        (_a = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _a === void 0 ? void 0 : _a.Answer();
-    }
-    RejectCall() {
-        var _a;
-        (_a = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _a === void 0 ? void 0 : _a.Hangup();
-    }
-    MakeCall(number, callback) {
-        return __awaiter(this, void 0, void 0, function* () {
+        this.RegisterDevice = () => {
+            __classPrivateFieldGet(this, _ExotelWebPhoneSDK_exWebClient, "f").DoRegister();
+        };
+        this.UnRegisterDevice = () => {
+            __classPrivateFieldGet(this, _ExotelWebPhoneSDK_exWebClient, "f").UnRegister(__classPrivateFieldGet(this, _ExotelWebPhoneSDK_sipInfo, "f"));
+        };
+        /**
+         * #callListenerCallback is a wrapper over the listener callback
+         * provided at the time of initialisation to allow us to log stuff
+         * @param callObj
+         * @param eventType
+         * @param sipInfo
+         */
+        this.CallListenerCallback = (callObj, eventType, sipInfo) => {
+            var _a;
+            __classPrivateFieldSet(this, _ExotelWebPhoneSDK_call, __classPrivateFieldGet(this, _ExotelWebPhoneSDK_exWebClient, "f").getCall(), "f");
+            callObj.callFromNumber = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_exWebClient, "f").callFromNumber;
+            console.info((_a = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _a === void 0 ? void 0 : _a.callDetails());
+            this._softPhoneCallListenerCallback(eventType, callObj);
+        };
+        this.RegisterEventCallBack = (state, sipInfo) => {
+            this._softPhoneRegisterEventCallBack(state); // Some problem with the way this is being called in ts
+        };
+        this.SessionCallback = (state, sipInfo) => {
+            console.info("SessionCallback", state, "for number...", sipInfo);
+            this._softPhoneSessionCallback(state, sipInfo);
+        };
+        this.AcceptCall = () => {
+            var _a;
+            (_a = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _a === void 0 ? void 0 : _a.Answer();
+        };
+        this.HangupCall = () => {
+            var _a;
+            (_a = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _a === void 0 ? void 0 : _a.Hangup();
+        };
+        this.MakeCall = (number, callback) => __awaiter(this, void 0, void 0, function* () {
             const payload = {
                 customer_id: __classPrivateFieldGet(this, _ExotelWebPhoneSDK_user, "f").customerId,
                 app_id: __classPrivateFieldGet(this, _ExotelWebPhoneSDK_user, "f").appId,
@@ -100,29 +101,41 @@ class ExotelWebPhoneSDK {
                 callback("failed", error);
             }
         });
+        this.ToggleHoldButton = () => {
+            var _a, _b;
+            (_a = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _a === void 0 ? void 0 : _a.HoldToggle();
+            this._softPhoneCallListenerCallback("holdtoggle", (_b = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _b === void 0 ? void 0 : _b.callDetails());
+        };
+        this.ToggleMuteButton = () => {
+            var _a;
+            __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f").Mute();
+            this._softPhoneCallListenerCallback("mutetoggle", (_a = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _a === void 0 ? void 0 : _a.callDetails());
+        };
+        __classPrivateFieldSet(this, _ExotelWebPhoneSDK_accessToken, accessToken, "f"); // This access token is understood by icore which makes this SDK dependent on it
+        __classPrivateFieldSet(this, _ExotelWebPhoneSDK_user, user, "f");
+        // this._softPhoneRegisterEventCallBack;
+        // this._softPhoneCallListenerCallback;
+        // this._softPhoneSessionCallback;
+        // this.#exWebClient;
+        // this.#call;
     }
-    ToggleHoldButton() {
-        var _a, _b;
-        (_a = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _a === void 0 ? void 0 : _a.HoldToggle();
-        __classPrivateFieldGet(this, _ExotelWebPhoneSDK_softPhoneCallListenerCallback, "f").call(this, "holdtoggle", (_b = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _b === void 0 ? void 0 : _b.callDetails());
-    }
-    ToggleMuteButton() {
-        var _a;
-        __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f").Mute();
-        __classPrivateFieldGet(this, _ExotelWebPhoneSDK_softPhoneCallListenerCallback, "f").call(this, "mutetoggle", (_a = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _a === void 0 ? void 0 : _a.callDetails());
+    Initialize(sipInfo, callListenerCallback, autoConnectVOIP = false, registerEventCallBack, sessionCallback) {
+        __classPrivateFieldSet(this, _ExotelWebPhoneSDK_sipInfo, sipInfo, "f");
+        this._softPhoneCallListenerCallback = callListenerCallback;
+        if (registerEventCallBack) {
+            this._softPhoneRegisterEventCallBack = registerEventCallBack;
+        }
+        if (sessionCallback) {
+            this._softPhoneSessionCallback = sessionCallback;
+        }
+        __classPrivateFieldSet(this, _ExotelWebPhoneSDK_exWebClient, new webrtc_client_sdk_1.ExotelWebClient(), "f");
+        __classPrivateFieldGet(this, _ExotelWebPhoneSDK_exWebClient, "f").initWebrtc(sipInfo, this.RegisterEventCallBack, this.CallListenerCallback, this.SessionCallback);
+        if (autoConnectVOIP) {
+            this.RegisterDevice();
+        }
+        return this;
     }
 }
-_ExotelWebPhoneSDK_accessToken = new WeakMap(), _ExotelWebPhoneSDK_user = new WeakMap(), _ExotelWebPhoneSDK_softPhoneRegisterEventCallBack = new WeakMap(), _ExotelWebPhoneSDK_softPhoneCallListenerCallback = new WeakMap(), _ExotelWebPhoneSDK_exWebClient = new WeakMap(), _ExotelWebPhoneSDK_sipInfo = new WeakMap(), _ExotelWebPhoneSDK_softPhoneSessionCallback = new WeakMap(), _ExotelWebPhoneSDK_call = new WeakMap(), _ExotelWebPhoneSDK_instances = new WeakSet(), _ExotelWebPhoneSDK_callListenerCallback = function _ExotelWebPhoneSDK_callListenerCallback(callObj, eventType, sipInfo) {
-    var _a;
-    // let call = this._exWebClient.getCall();
-    __classPrivateFieldSet(this, _ExotelWebPhoneSDK_call, __classPrivateFieldGet(this, _ExotelWebPhoneSDK_exWebClient, "f").getCall(), "f");
-    callObj.callFromNumber = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_exWebClient, "f").callFromNumber;
-    console.info((_a = __classPrivateFieldGet(this, _ExotelWebPhoneSDK_call, "f")) === null || _a === void 0 ? void 0 : _a.callDetails());
-    __classPrivateFieldGet(this, _ExotelWebPhoneSDK_softPhoneCallListenerCallback, "f").call(this, eventType, callObj);
-}, _ExotelWebPhoneSDK_registerEventCallBack = function _ExotelWebPhoneSDK_registerEventCallBack(state, sipInfo) {
-    __classPrivateFieldGet(this, _ExotelWebPhoneSDK_softPhoneRegisterEventCallBack, "f").call(this, state);
-}, _ExotelWebPhoneSDK_sessionCallback = function _ExotelWebPhoneSDK_sessionCallback(state, sipInfo) {
-    console.info("Session state:", state, "for number...", sipInfo);
-    __classPrivateFieldGet(this, _ExotelWebPhoneSDK_softPhoneSessionCallback, "f").call(this, state, sipInfo);
-};
 exports.default = ExotelWebPhoneSDK;
+_ExotelWebPhoneSDK_accessToken = new WeakMap(), _ExotelWebPhoneSDK_user = new WeakMap(), _ExotelWebPhoneSDK_exWebClient = new WeakMap(), _ExotelWebPhoneSDK_sipInfo = new WeakMap(), _ExotelWebPhoneSDK_call = new WeakMap();
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiRXhvdGVsV2ViUGhvbmVTREsuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi9zcmMvRXhvdGVsV2ViUGhvbmVTREsudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSxhQUFhO0FBQ2IseUVBQW9FO0FBSXBFLDJDQUEyQztBQXNDM0MsTUFBcUIsaUJBQWlCO0lBWXBDLFlBQVksV0FBbUIsRUFBRSxJQUFVO1FBWDNDLGlEQUFxQjtRQUNyQiwwQ0FBWTtRQUlaLGlEQUE4QjtRQUM5Qiw2Q0FBeUI7UUFHekIsMENBQVk7UUEyQ1osbUJBQWMsR0FBRyxHQUFHLEVBQUU7WUFDcEIsdUJBQUEsSUFBSSxzQ0FBYSxDQUFDLFVBQVUsRUFBRSxDQUFDO1FBQ2pDLENBQUMsQ0FBQTtRQUVELHFCQUFnQixHQUFHLEdBQUcsRUFBRTtZQUN0Qix1QkFBQSxJQUFJLHNDQUFhLENBQUMsVUFBVSxDQUFDLHVCQUFBLElBQUksa0NBQVMsQ0FBQyxDQUFDO1FBQzlDLENBQUMsQ0FBQTtRQUVEOzs7Ozs7V0FNRztRQUNILHlCQUFvQixHQUFHLENBQ3JCLE9BQVksRUFDWixTQUFvQixFQUNwQixPQUF1QixFQUN2QixFQUFFOztZQUNGLHVCQUFBLElBQUksMkJBQVMsdUJBQUEsSUFBSSxzQ0FBYSxDQUFDLE9BQU8sRUFBRSxNQUFBLENBQUM7WUFDekMsT0FBTyxDQUFDLGNBQWMsR0FBRyx1QkFBQSxJQUFJLHNDQUFhLENBQUMsY0FBYyxDQUFDO1lBQzFELE9BQU8sQ0FBQyxJQUFJLENBQUMsTUFBQSx1QkFBQSxJQUFJLCtCQUFNLDBDQUFFLFdBQVcsRUFBRSxDQUFDLENBQUM7WUFDeEMsSUFBSSxDQUFDLDhCQUE4QixDQUFDLFNBQVMsRUFBRSxPQUFPLENBQUMsQ0FBQztRQUMxRCxDQUFDLENBQUE7UUFFRCwwQkFBcUIsR0FBRyxDQUFDLEtBQWEsRUFBRSxPQUF1QixFQUFFLEVBQUU7WUFDakUsSUFBSSxDQUFDLCtCQUErQixD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
