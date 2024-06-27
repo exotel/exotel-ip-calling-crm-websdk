@@ -188,7 +188,7 @@ export default class ExotelWebPhoneSDK {
   }
 
   SendDTMF = (digit: string) => {
-    const regex = /^[0-9]$/g;
+    const regex = /^[0-9*#]$/g;
     if (!digit.match(regex)) {
       return console.error(`Invalid dtmf input: ${digit}`);
     }
