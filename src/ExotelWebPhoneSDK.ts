@@ -186,4 +186,15 @@ export default class ExotelWebPhoneSDK {
       this.#call?.callDetails()
     );
   }
+
+  SendDTMF = (digit: string) => {
+    const regex = /^[0-9]$/g;
+    if (!digit.match(regex)) {
+      return console.error(`Invalid dtmf input: ${digit}`);
+    }
+    if(!this.#call) {
+      return console.error(`Cannot send dtmf input when there is no call in-progress`);
+    }
+    this.#call.sendDTMF(digit);
+  }
 }
