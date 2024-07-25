@@ -8,12 +8,12 @@ The ExotelCRMWebSDK allows you to leverage Exotel's platform for making IP calls
 You can install the package using npm:
 
 ```bash
-npm install git+https://github.com/ExoAbhishek/exotel-ip-calling-crm-websdk#v1.0.0
+npm install git+https://github.com/exotel/exotel-ip-calling-crm-websdk#v1.1.1
 ```
 
 ## Using the Package in a Project:
 
-Refer to sample project [here](https://github.com/exotel/exotel_websdk_crm/tree/pu) or read on.
+Refer to sample project [here](https://github.com/exotel/exotel-voip-websdk-crm/tree/main/npm-sample-app) or read on.
 
 1. Simply import the ExotelCRMWebSDK in your code like this:
 ```js
