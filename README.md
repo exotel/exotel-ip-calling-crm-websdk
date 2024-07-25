@@ -73,8 +73,10 @@ You must pass call events handler, registeration event handler (optional) and se
 
         **dialCallback**: It is called after the call request is made to the server (An actual call may start after this with a slight day).
 
-   6. **ToggleHold**: Toggle state hold/un-hold state of a call. This state needs to be maintained by the client
-   7. **ToggleMute** Toggle state mute/un-mute state of a call. This state needs to be maintained by the client
+        **CustomField**: String; Any application-specific value like order id that will be passed back as a parameter in status callback.
+
+   7. **ToggleHold**: Toggle state hold/un-hold state of a call. This state needs to be maintained by the client
+   8. **ToggleMute** Toggle state mute/un-mute state of a call. This state needs to be maintained by the client
 
 ## License
 
