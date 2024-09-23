@@ -110,8 +110,9 @@ export default class ExotelWebPhoneSDK {
   ) => {
     this.#call = this.#exWebClient.getCall();
     callObj.callFromNumber = this.#exWebClient.callFromNumber;
-    console.info(this.#call?.callDetails());
-    this._softPhoneCallListenerCallback(eventType, callObj);
+    const callDetails = callObj.callDetails();
+    callDetails.callFromNumber = this.#exWebClient.callFromNumber;
+    this._softPhoneCallListenerCallback(eventType, callDetails);
   }
 
   RegisterEventCallBack = (state: string, sipInfo: SIPAccountInfo) => {
@@ -175,16 +176,16 @@ export default class ExotelWebPhoneSDK {
     this.#call?.HoldToggle();
     this._softPhoneCallListenerCallback(
       "holdtoggle",
-      this.#call?.callDetails()
+      { ...this.#call?.callDetails(), callFromNumber: this.#exWebClient.callFromNumber}
     );
   }
 
   ToggleMute = () => {
     this.#call.Mute();
-    this._softPhoneCallListenerCallback(
-      "mutetoggle",
-      this.#call?.callDetails()
-    );
+    this._softPhoneCallListenerCallback("mutetoggle", {
+      ...this.#call?.callDetails(),
+      callFromNumber: this.#exWebClient.callFromNumber,
+    });
   }
 
   SendDTMF = (digit: string) => {
