@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>CRM SDK</title>
+</head>
+<body>
+  <h1>CRM SDK TEST</h1>
+  <input type="text" id="phoneNumber" placeholder="Enter phone number" />
+  <button onclick="dial()" id="dialButton">Dial</button>
+  <button onclick="acceptCall()" id="acceptButton" style="display:none;">Accept</button>
+  <button onclick="muteCall()" id="muteButton" style="display:none;">Mute</button>
+  <button onclick="hangup()" id="hangupButton" disabled>Hangup</button>
+  <p id="statusMessage">Initializing...</p>
+
+  <script type="module">
+    import ExotelCRMWebSDK from './target/crmBundle.js';
+
+    const accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjZiN2M0YTBjLTE5OTUtNGJlNi1hOGFiLWYxMjRlZDlkZjZkZSIsImV4cCI6MTczODg1NzI0MX0.z7T5x9sTPv56rf8sWHcufv3smqN1Rg8fG5AgPGuWCtI";
+    const userId = "manish07";
+    let webPhone;
+
+    async function initializeSDK() {
+      const crmWebSDK = new ExotelCRMWebSDK(accessToken, userId, true);
+
+      function handleCallEvents(eventType, args) {
+        const statusMessage = document.getElementById("statusMessage");
+        const acceptButton = document.getElementById("acceptButton");
+        const hangupButton = document.getElementById("hangupButton");
+        const muteButton = document.getElementById("muteButton");
+        const dialButton = document.getElementById("dialButton");
+
+        switch (eventType) {
+          case "incoming":
+            statusMessage.innerText = "Incoming call...";
+            acceptButton.style.display = "inline-block";
+            muteButton.style.display = "inline-block";
+            dialButton.style.display = "none";
+            break;
+          case "connected":
+            statusMessage.innerText = "Call connected";
+            acceptButton.style.display = "none";
+            dialButton.style.display = "none";
+            hangupButton.disabled = false;
+            break;
+          case "callEnded":
+            statusMessage.innerText = "Call ended";
+            acceptButton.style.display = "none";
+            muteButton.style.display = "none";
+            dialButton.style.display = "inline-block";
+            hangupButton.disabled = true;
+            break;
+          default:
+            statusMessage.innerText = "Handling event: " + eventType;
+            break;
+        }
+      }
+
+      function handleRegistrationEvent(event) {
+        const statusMessage = document.getElementById("statusMessage");
+        if (event === "registered") {
+          statusMessage.innerText = "Device registered and ready";
+        } else if (event === "unregistered") {
+          statusMessage.innerText = "Device unregistered";
+        }
+      }
+
+      webPhone = await crmWebSDK.Initialize(handleCallEvents, handleRegistrationEvent);
+      console.log("Initialized webPhone:", webPhone);
+    }
+
+    initializeSDK();
+
+    function dial() {
+      const phoneNumber = document.getElementById("phoneNumber").value;
+      if (/^\+?[0-9]{10,14}$/.test(phoneNumber)) {
+        document.getElementById("statusMessage").innerText = `Dialling ${phoneNumber}...`;
+
+        const dialCallback = (status, response) => {
+          console.log("Dial response:", status, response);
+          if (status === "success") {
+            console.log("Call initiated successfully with CallSid:", response.Data.CallSid);
+          } else {
+            console.log("Dial failed");
+          }
+        };
+
+        webPhone.MakeCall(phoneNumber, dialCallback);
+      } else {
+        document.getElementById("statusMessage").innerText = "Invalid phone number";
+      }
+    }
+
+    function acceptCall() {
+      if (webPhone) {
+        webPhone.AcceptCall();
+        document.getElementById("statusMessage").innerText = "Call accepted";
+        document.getElementById("acceptButton").style.display = "none";
+        document.getElementById("hangupButton").disabled = false;
+        document.getElementById("muteButton").style.display = "inline-block";
+      }
+    }
+
+    function hangup() {
+      if (webPhone) {
+        webPhone.HangupCall();
+        document.getElementById("statusMessage").innerText = "Call ended";
+        document.getElementById("hangupButton").disabled = true;
+      }
+    }
+
+    function muteCall() {
+      if (webPhone) {
+        webPhone.ToggleMute();
+        document.getElementById("hangupButton").disabled = true;
+      }
+    }
+
+    window.dial = dial;
+    window.hangup = hangup;
+    window.acceptCall = acceptCall;
+    window.muteCall = muteCall;
+  </script>
+</body>
+</html>
