@@ -16,8 +16,8 @@
   <script type="module">
     import ExotelCRMWebSDK from './target/crmBundle.js';
 
-    const accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJZCI6IjZiN2M0YTBjLTE5OTUtNGJlNi1hOGFiLWYxMjRlZDlkZjZkZSIsImV4cCI6MTczODg1NzI0MX0.z7T5x9sTPv56rf8sWHcufv3smqN1Rg8fG5AgPGuWCtI";
-    const userId = "manish07";
+    const accessToken = "This can be generated using the Create Authentication Token API";
+    const userId = "This can be generated using the Application user management API";
     let webPhone;
 
     async function initializeSDK() {
@@ -116,14 +116,14 @@
     function muteCall() {
       if (webPhone) {
         webPhone.ToggleMute();
-        document.getElementById("hangupButton").disabled = true;
+        document.getElementById("hangupButton").disabled = false;
       }
     }
 
     function holdCall() {
       if (webPhone) {
         webPhone.ToggleHold();
-        document.getElementById("hangupButton").disabled = true;
+        document.getElementById("hangupButton").disabled = false;
       }
     }
 
