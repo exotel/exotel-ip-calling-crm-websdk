@@ -7,7 +7,8 @@ module.exports = {
         library: 'ExotelCRMWebSDK',
         libraryTarget: 'umd', 
         libraryExport: 'default', 
-        publicPath: './target/'
+        publicPath: './target/',
+        assetModuleFilename: '[name][ext][query]'
     },
     module: {
         rules: [
