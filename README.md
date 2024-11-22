@@ -148,13 +148,18 @@ const crmWebPhone = await crmWebSDK.Initialize(HandleCallEvents, RegisterationEv
 
 You must pass call events handler, registeration event handler (optional) and session callback handler (optional) to the `Initialize` method
 
+
 10. **ExotelWebPhoneSDK**
-   
-   1. **RegisterDevice**: Registers the device with the call server.
-   2. **UnRegisterDevice**: Un-registers the device from the call server.
-   3. **AcceptCall**: Accept call
-   4. **HangupCall**: Disconnect call
-   5. **MakeCall**: (async) Method that places a call
+        
+    1. **RegisterDevice**: Registers the device with the call server.
+
+    2. **UnRegisterDevice**: Un-registers the device from the call server.
+
+    3. **AcceptCall**: Accept call
+
+    4. **HangupCall**: Disconnect call
+
+    5. **MakeCall**: (async) Method that places a call
         
         **Number**: A number to dial
 
@@ -162,8 +167,9 @@ You must pass call events handler, registeration event handler (optional) and se
 
         **CustomField**: String; Any application-specific value like order id that will be passed back as a parameter in status callback.
 
-   7. **ToggleHold**: Toggle state hold/un-hold state of a call. This state needs to be maintained by the client
-   8. **ToggleMute** Toggle state mute/un-mute state of a call. This state needs to be maintained by the client
+    6. **ToggleHold**: Toggle state hold/un-hold state of a call. This state needs to be maintained by the client
+    
+    7. **ToggleMute** Toggle state mute/un-mute state of a call. This state needs to be maintained by the client
 
 ## License
 
