@@ -79,7 +79,7 @@ export default class ExotelCRMWebSDK {
     if (!response.ok) {
       throw new Error(`Failed to load app. Status: ${response.status}`);
     }
-
+    this.#app =await response.json()
     /**
      * TODO: Right now app settings response returns preference related to UI widget
      * location, which doesn't exist yet for this CRMWebSDK.
@@ -122,7 +122,7 @@ export default class ExotelCRMWebSDK {
     if (userMappingResponse['Code'] === 404) {
       throw new Error(`User mapping not found for user_id: ${this.#agentUserID}`);
     } else if (userMappingResponse['Code'] >= 400) {
-      throw new Error(`Error fetching user mapping. Status: ${response.status}, Message: ${JSON.stringify(userMappingResponse)}`);
+      throw new Error(`Error fetching user mapping. Status: ${response.status}, Error: ${JSON.stringify(userMappingResponse["Error"])}`);
     }
 
     this.#userData = new User(userMappingResponse.Data);
