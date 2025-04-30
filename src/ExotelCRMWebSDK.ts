@@ -76,10 +76,13 @@ export default class ExotelCRMWebSDK {
       headers: { Authorization: this.#accessToken },
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to load app. Status: ${response.status}`);
+    var appResponse=await response.json();
+    if (response.status === 404) {
+      throw new Error(`Failed to load app. App not found.`);
+    } else if (!response.ok) {
+      throw new Error(`Error fetching app. Status: ${response.status}, Error: ${JSON.stringify(appResponse["Error"])}`);
     }
-    this.#app =await response.json()
+    this.#app =appResponse;
     /**
      * TODO: Right now app settings response returns preference related to UI widget
      * location, which doesn't exist yet for this CRMWebSDK.
@@ -89,19 +92,21 @@ export default class ExotelCRMWebSDK {
 
     // Load app settings for the tenant
 
-    const settingsResponse = await fetch(
+    response = await fetch(
       `${icoreBaseURL}/v2/integrations/app_setting`,
       {
         method: "GET",
         headers: { Authorization: this.#accessToken },
       }
     );
-
-    if (!settingsResponse.ok) {
-      throw new Error(`Failed to load app settings. Status: ${settingsResponse.status}`);
+    
+    var appSettingResponse= await response.json();
+    if (response.status === 404) {
+      throw new Error(`Failed to load app settings. App setting not found.`);
+    } else if (!response.ok) {
+      throw new Error(`Error fetching app setting. Status: ${response.status}, Error: ${JSON.stringify(appSettingResponse["Error"])}`);
     }
-
-    this.#appSettings = await settingsResponse.json();
+    this.#appSettings = appSettingResponse;
 
 
     // Load user mapping for the tenant
