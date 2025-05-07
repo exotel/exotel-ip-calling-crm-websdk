@@ -124,7 +124,7 @@ export default class ExotelCRMWebSDK {
 
     const userMappingResponse = await response.json();
 
-    if (userMappingResponse['Code'] === 404) {
+    if (response.status === 404) {
       throw new Error(`User mapping not found for user_id: ${this.#agentUserID}`);
     } else if (userMappingResponse['Code'] >= 400) {
       throw new Error(`Error fetching user mapping. Status: ${response.status}, Error: ${JSON.stringify(userMappingResponse["Error"])}`);
