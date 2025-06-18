@@ -2,9 +2,10 @@ import { icoreBaseURL, voipDomainSIP, voipDomain } from './Constants';
 import { User } from "./User";
 import { SIPAccountInfo } from "./SipAccountInfo";
 import ExotelWebPhoneSDK from "./ExotelWebPhoneSDK";
+import { ExotelCRMWebSDKError, ErrorCodes } from './ExotelCRMWebSDKError';
 
 // Fetches account details, user details, and their settings
-export default  class ExotelCRMWebSDK {
+export default class ExotelCRMWebSDK {
   #accessToken: string;
   #agentUserID: string;
   #autoConnectVOIP: boolean;
@@ -15,12 +16,16 @@ export default  class ExotelCRMWebSDK {
     autoConnectVOIP: boolean = false
   ) {
     if (!accesssToken) {
-      console.error("empty access token passed");
-      return;
+      throw new ExotelCRMWebSDKError(
+        'Access token is required for initialization',
+        ErrorCodes.INVALID_ACCESS_TOKEN
+      );
     }
     if (!agentUserID) {
-      console.error("empty agentUserID passed");
-      return;
+      throw new ExotelCRMWebSDKError(
+        'Agent User ID is required for initialization',
+        ErrorCodes.INVALID_AGENT_USER_ID
+      );
     }
     this.#accessToken = accesssToken;
     this.#agentUserID = agentUserID;
@@ -42,22 +47,36 @@ export default  class ExotelCRMWebSDK {
     sofPhoneListenerCallback: any,
     softPhoneRegisterEventCallBack = null,
     softPhoneSessionCallback = null
-  ): Promise<ExotelWebPhoneSDK | void> {
-    await this.#loadSettings();
-    const sipInfo = this.#getSIPInfo();
-    console.info("sipInfo", {sipInfo});
-    if (!sipInfo) {
-      return;
-    }
+  ): Promise<ExotelWebPhoneSDK> {
+    try {
+      await this.#loadSettings();
+      const sipInfo = this.#getSIPInfo();
+      
+      if (!sipInfo) {
+        throw new ExotelCRMWebSDKError(
+          'Failed to get SIP information. Please check if user data and app are properly configured.',
+          ErrorCodes.SIP_INFO_MISSING
+        );
+      }
 
-    const webPhone = new ExotelWebPhoneSDK(this.#accessToken, this.#userData);
-    return webPhone.Initialize(
-      sipInfo,
-      sofPhoneListenerCallback,
-      this.#autoConnectVOIP,
-      softPhoneRegisterEventCallBack,
-      softPhoneSessionCallback
-    );
+      const webPhone = new ExotelWebPhoneSDK(this.#accessToken, this.#userData);
+      return await webPhone.Initialize(
+        sipInfo,
+        sofPhoneListenerCallback,
+        this.#autoConnectVOIP,
+        softPhoneRegisterEventCallBack,
+        softPhoneSessionCallback
+      );
+    } catch (error) {
+      if (error instanceof ExotelCRMWebSDKError) {
+        throw error;
+      }
+      throw new ExotelCRMWebSDKError(
+        'Failed to initialize ExotelCRMWebSDK',
+        ErrorCodes.INITIALIZATION_FAILED,
+        error
+      );
+    }
   }
 
   async #loadSettings() {
@@ -68,10 +87,25 @@ export default  class ExotelCRMWebSDK {
         headers: { Authorization: this.#accessToken },
       });
 
+      if (!response.ok) {
+        throw new ExotelCRMWebSDKError(
+          `Failed to load app settings: ${response.statusText}`,
+          ErrorCodes.APP_LOAD_FAILED,
+          { status: response.status }
+        );
+      }
+
       const appResponse = await response.json();
       this.#app = appResponse.Data;
     } catch (error) {
-      console.error("error loading app:", error);
+      if (error instanceof ExotelCRMWebSDKError) {
+        throw error;
+      }
+      throw new ExotelCRMWebSDKError(
+        'Failed to load app settings',
+        ErrorCodes.APP_LOAD_FAILED,
+        error
+      );
     }
 
     /**
@@ -90,17 +124,31 @@ export default  class ExotelCRMWebSDK {
           headers: { Authorization: this.#accessToken },
         }
       );
+
+      if (!settingsResponse.ok) {
+        throw new ExotelCRMWebSDKError(
+          `Failed to load app settings: ${settingsResponse.statusText}`,
+          ErrorCodes.APP_SETTINGS_LOAD_FAILED,
+          { status: settingsResponse.status }
+        );
+      }
+
       this.#appSettings = await settingsResponse.json();
     } catch (error) {
-      console.error("error loading app settings:", error);
+      if (error instanceof ExotelCRMWebSDKError) {
+        throw error;
+      }
+      throw new ExotelCRMWebSDKError(
+        'Failed to load app settings',
+        ErrorCodes.APP_SETTINGS_LOAD_FAILED,
+        error
+      );
     }
 
     // Load user mapping for the tenant
     try {
       const response = await fetch(
-        `${icoreBaseURL}/v2/integrations/usermapping?user_id=${
-          this.#agentUserID
-        }`,
+        `${icoreBaseURL}/v2/integrations/usermapping?user_id=${this.#agentUserID}`,
         {
           method: "GET",
           headers: {
@@ -109,32 +157,53 @@ export default  class ExotelCRMWebSDK {
           },
         }
       );
+
+      if (!response.ok) {
+        throw new ExotelCRMWebSDKError(
+          `Failed to load user mapping: ${response.statusText}`,
+          ErrorCodes.USER_MAPPING_FAILED,
+          { status: response.status }
+        );
+      }
+
       const userMappingResponse = await response.json();
       this.#userData = new User(userMappingResponse.Data);
     } catch (error) {
-      console.error("error loading user details:", error);
+      if (error instanceof ExotelCRMWebSDKError) {
+        throw error;
+      }
+      throw new ExotelCRMWebSDKError(
+        'Failed to load user mapping',
+        ErrorCodes.USER_MAPPING_FAILED,
+        error
+      );
     }
   }
 
-  #getSIPInfo(): SIPAccountInfo | void {
+  #getSIPInfo(): SIPAccountInfo {
     if (!this.#userData) {
-      console.error("userData must be configured to get sip info");
-      return;
+      throw new ExotelCRMWebSDKError(
+        'User data must be configured to get SIP info',
+        ErrorCodes.SIP_INFO_MISSING
+      );
     }
     if (!this.#app) {
-      console.error("app must be configured to get sip info");
-      return;
+      throw new ExotelCRMWebSDKError(
+        'App must be configured to get SIP info',
+        ErrorCodes.SIP_INFO_MISSING
+      );
     }
+
     const sipAccountInfo: SIPAccountInfo = {
-      userName: this.#userData.sipId.split(":")[1], // sipInfo.Username,
-      authUser: this.#userData.sipId.split(":")[1], //sipInfo.Username,
-      sipdomain: this.#app.ExotelAccountSid + "." + voipDomainSIP, //sipInfo.Domain,
-      domain: voipDomain + ":443", // sipInfo.HostServer + ":" + sipInfo.Port,
-      displayname: this.#userData.exotelUserName, //sipInfo.DisplayName,
-      secret: this.#userData.sipSecret, //sipInfo.Password,
-      port: "443", //sipInfo.Port,
-      security: "wss", //sipInfo.Security,
-      endpoint: "wss", //sipInfo.EndPoint
+      userName: this.#userData.sipId.split(":")[1],
+      authUser: this.#userData.sipId.split(":")[1],
+      sipdomain: this.#app.ExotelAccountSid + "." + voipDomainSIP,
+      domain: voipDomain + ":443",
+      displayname: this.#userData.exotelUserName,
+      secret: this.#userData.sipSecret,
+      port: "443",
+      security: "wss",
+      endpoint: "wss"
     };
     return sipAccountInfo;
   }
