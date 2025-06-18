@@ -11,11 +11,11 @@ export default class ExotelCRMWebSDK {
   #autoConnectVOIP: boolean;
 
   constructor(
-    accesssToken: string,
+    accessToken: string,
     agentUserID: string,
     autoConnectVOIP: boolean = false
   ) {
-    if (!accesssToken) {
+    if (!accessToken) {
       throw new ExotelCRMWebSDKError(
         'Access token is required for initialization',
         ErrorCodes.INVALID_ACCESS_TOKEN
@@ -27,7 +27,7 @@ export default class ExotelCRMWebSDK {
         ErrorCodes.INVALID_AGENT_USER_ID
       );
     }
-    this.#accessToken = accesssToken;
+    this.#accessToken = accessToken;
     this.#agentUserID = agentUserID;
     this.#autoConnectVOIP = autoConnectVOIP;
   }
