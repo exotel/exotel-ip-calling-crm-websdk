@@ -10,6 +10,12 @@
 
 
 
+<<<<<<< HEAD
+=======
+```bash
+npm install git+https://github.com/exotel/exotel-ip-calling-crm-websdk#v1.2.0
+```
+>>>>>>> 4ccdc8b (docs: update README with v1.2.0 and improved API documentation)
 
 # Steps
 
@@ -108,13 +114,21 @@ crmWebPhone.MakeCall('9876543210', (status, data) => {
 - **Initialize(callListenerCallback, registerEventCallback?, sessionCallback?)**: Promise<ExotelWebPhoneSDK | void>
 
 ### ExotelWebPhoneSDK
-- **RegisterDevice()**
-- **UnRegisterDevice()**
-- **AcceptCall()**
-- **HangupCall()**
-- **MakeCall(number, dialCallback, customField?)**
-- **ToggleHold()**
-- **ToggleMute()**
+   
+   1. **RegisterDevice**: Registers the device with the call server.
+   2. **UnRegisterDevice**: Un-registers the device from the call server.
+   3. **AcceptCall**: Accept call
+   4. **HangupCall**: Disconnect call
+   5. **MakeCall**: (async) Method that places a call
+        
+        **Number**: A number to dial
+
+        **dialCallback**: It is called after the call request is made to the server (An actual call may start after this with a slight day).
+
+        **CustomField**: String; Any application-specific value like order id that will be passed back as a parameter in status callback.
+
+   7. **ToggleHold**: Toggle state hold/un-hold state of a call. This state needs to be maintained by the client
+   8. **ToggleMute** Toggle state mute/un-mute state of a call. This state needs to be maintained by the client
 
 ## Project Structure
 
@@ -151,25 +165,3 @@ npm test
 This project is licensed under the Apache-2.0 License. See the [LICENSE](https://apache.org/licenses/LICENSE-2.0) file for details.
 
 ---
-
-## 5. ExotelWebPhoneSDK
-   
-   1. **RegisterDevice**: Registers the device with the call server.
-   2. **UnRegisterDevice**: Un-registers the device from the call server.
-   3. **AcceptCall**: Accept call
-   4. **HangupCall**: Disconnect call
-   5. **MakeCall**: (async) Method that places a call
-        
-        **Number**: A number to dial
-
-        **dialCallback**: It is called after the call request is made to the server (An actual call may start after this with a slight day).
-
-        **CustomField**: String; Any application-specific value like order id that will be passed back as a parameter in status callback.
-
-   7. **ToggleHold**: Toggle state hold/un-hold state of a call. This state needs to be maintained by the client
-   8. **ToggleMute** Toggle state mute/un-mute state of a call. This state needs to be maintained by the client
-
-
-## License
-
-This project is licensed under the Apache-2.0 License. See the [LICENSE](https://apache.org/licenses/LICENSE-2.0) file for details.
