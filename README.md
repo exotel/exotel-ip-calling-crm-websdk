@@ -1,7 +1,12 @@
 # ExotelCRMWebSDK (Beta)
 
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://apache.org/licenses/LICENSE-2.0)
 
-The ExotelCRMWebSDK allows you to leverage Exotel's platform for making IP calls, with this easy to integrate feature.
+## Overview
+
+**ExotelCRMWebSDK** enables seamless integration of Exotel's IP calling platform into your CRM or web application. It is designed for external developer partners who want to add robust calling features to their products with minimal effort.
+
+> **Note:** This package is open for use and integration, but not for modification. Please contact Exotel for feature requests or issues.
 
 
 
@@ -11,7 +16,7 @@ The ExotelCRMWebSDK allows you to leverage Exotel's platform for making IP calls
 ## 1. Using the Package in a Project:
 ### For npm users:
 
-Refer to sample project [here](https://github.com/exotel/exotel-voip-websdk-crm-sample-app) or read on.
+Refer to the [sample project](https://github.com/exotel/exotel-voip-websdk-crm-sample-app) or follow the steps below:
 
 #### Steps:
 1. You can install the package using npm:
@@ -67,45 +72,85 @@ You can configure crmWebSDK object like this:
 ```js
 const crmWebSDK = new ExotelCRMWebSDK(accessToken, userId, true);
 ```
+- **accessToken**: Generated using the [Create Authentication Token API](https://developer.exotel.com/api/ip-pstn-intermix-webrtc-sdk-integration#create-authentication-token)
+- **userId**: Obtainable via [Application user management APIs](https://developer.exotel.com/api/ip-pstn-intermix-webrtc-sdk-integration#applications-user-management)
+- **autoConnectVOIP**: If true, auto-connects device on initialization. If false, call `DoRegister` on `ExotelWebPhoneSDK` manually.
 
-## 3. ExotelCRMWebSDK
-
-**constructor**
-
-**accessToken** : This can be generated using the 
-  [Create Authentication Token API](https://developer.exotel.com/api/ip-pstn-intermix-webrtc-sdk-integration#create-authentication-token)
-  
-  **userId** : You can get the userId using the [Application user management APIs](https://developer.exotel.com/api/ip-pstn-intermix-webrtc-sdk-integration#applications-user-management)
-  
-  **autoConnectVOIP** : If true, it will auto-connect device when the `ExotelWebPhoneSDK` is returned on initialization. (If you have passed false, then you must call `DoRegister` on `ExotelWebPhoneSDK`)
-  
-  **Initialize**
-  
-  Initializes the CRMWebSDK, sets up the phone object, and registers callbacks for various events.
-  
-  Parameters:
-  
-  `sofPhoneListenerCallback` (function): Callback for incoming calls.
-  
-  `softPhoneRegisterEventCallBack` (function, optional): Callback for soft phone register events. Default is null.
-  
-  `softPhoneSessionCallback` (function, optional): Callback for soft phone session events. Default is null.
-  
-  Returns:
-  
-  Promise<ExotelWebPhoneSDK | void>: A promise that resolves to an instance of ExotelWebPhoneSDK if successful, or void if unsuccessful.
-  
-  
-## 4. Initialize method
-
-Use the `Initialize` method on the `ExotelCRMWebSDK` object which returns Promise that resolves to `ExotelWebPhoneSDK` object.
-    `ExotelCRMWebSDK` does all the work to get necessary details required for the `ExotelWebPhoneSDK`
-
-```javascript
+### 3. Initialize the SDK
+```js
 const crmWebPhone = await crmWebSDK.Initialize(HandleCallEvents, RegisterationEvent);
 ```
+- `HandleCallEvents`: Callback for incoming call events
+- `RegisterationEvent`: (Optional) Callback for registration events
+- `softPhoneSessionCallback`: (Optional) Callback for session events
 
-You must pass call events handler, registeration event handler (optional) and session callback handler (optional) to the `Initialize` method
+### 4. Use the ExotelWebPhoneSDK
+The `Initialize` method returns an `ExotelWebPhoneSDK` instance. You can now:
+- Register/unregister device
+- Accept/hangup calls
+- Make calls
+- Toggle hold/mute
+
+#### Example:
+```js
+crmWebPhone.RegisterDevice();
+crmWebPhone.MakeCall('9876543210', (status, data) => {
+  if (status === 'success') {
+    // handle call success
+  }
+});
+```
+
+## API Reference
+
+### ExotelCRMWebSDK
+- **constructor(accessToken, userId, autoConnectVOIP = false)**
+- **Initialize(callListenerCallback, registerEventCallback?, sessionCallback?)**: Promise<ExotelWebPhoneSDK | void>
+
+### ExotelWebPhoneSDK
+- **RegisterDevice()**
+- **UnRegisterDevice()**
+- **AcceptCall()**
+- **HangupCall()**
+- **MakeCall(number, dialCallback, customField?)**
+- **ToggleHold()**
+- **ToggleMute()**
+
+## Project Structure
+
+```
+src/
+├── core/                # Core SDK and models
+│   ├── ExotelCRMWebSDK.ts
+│   ├── ExotelWebPhoneSDK.ts
+│   ├── User.ts
+│   └── SipAccountInfo.ts
+├── interfaces/          # TypeScript interfaces
+│   └── IWebRTCClient.ts
+├── implementations/     # Implementations for interfaces
+│   ├── WebRTCClientImpl.ts
+│   └── MockWebRTCClient.ts
+├── __tests__/           # Test files
+├── __mocks__/           # Jest mocks
+```
+
+## Building & Testing
+
+To build the SDK:
+```bash
+npm run build
+```
+
+To run tests (with coverage):
+```bash
+npm test
+```
+
+## License
+
+This project is licensed under the Apache-2.0 License. See the [LICENSE](https://apache.org/licenses/LICENSE-2.0) file for details.
+
+---
 
 ## 5. ExotelWebPhoneSDK
    
