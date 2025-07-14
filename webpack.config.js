@@ -1,6 +1,7 @@
 const path = require('path');
 module.exports = {
-    entry: "./src/ExotelCRMWebSDK.ts",
+    mode: 'production',
+    entry: "./src/core/ExotelCRMWebSDK.ts",
     output: {
         filename: "crmBundle.js",
         path: path.resolve(__dirname, 'target'),
@@ -15,7 +16,7 @@ module.exports = {
             {
                 test: /\.ts$/,
                 use: 'ts-loader',
-                exclude: /node_modules/
+                exclude: [/node_modules/, /__tests__/, /__mocks__/]
             },
             {
                 test: /\.(wav)$/,
@@ -25,5 +26,9 @@ module.exports = {
     },
     resolve: {
         extensions: ['.js', '.ts'],
-    }
+    },
+    performance: {
+        maxAssetSize: 1024 * 1024,        // 1 MiB
+        maxEntrypointSize: 512 * 1024,   // 512 KiB
+    },
 };
