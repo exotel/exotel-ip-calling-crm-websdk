@@ -141,4 +141,9 @@ export default class ExotelCRMWebSDK {
     };
     return sipAccountInfo;
   }
+
+  // Add this public getter for testing purposes
+  public getWebRTCClient() {
+    return this.#webRTCClient;
+  }
 }
