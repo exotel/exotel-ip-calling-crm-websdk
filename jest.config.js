@@ -6,10 +6,5 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
-  transformIgnorePatterns: [
-    'node_modules/(?!(@exotel-npm-dev/webrtc-client-sdk)/)',
-  ],
-  moduleNameMapper: {
-    '^@exotel-npm-dev/webrtc-client-sdk$': '<rootDir>/src/__mocks__/webrtc-client-sdk.ts'
-  }
+  modulePathIgnorePatterns: ['<rootDir>/output/']
 }; 
