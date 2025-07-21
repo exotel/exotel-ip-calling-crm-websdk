@@ -1,4 +1,4 @@
-import { icoreBaseURL, voipDomainSIP, voipDomain } from './Constants';
+import { icoreBaseURL, voipDomainSIP, voipDomain } from "./Constants";
 import { User } from "./User";
 import { SIPAccountInfo } from "./SipAccountInfo";
 import ExotelWebPhoneSDK from "./ExotelWebPhoneSDK";
@@ -83,7 +83,7 @@ export default class ExotelCRMWebSDK {
     } else if (!response.ok) {
       throw new Error(`Error fetching app. Status: ${response.status}, Error: ${JSON.stringify(appResponse["Error"])}`);
     }
-    this.#app =appResponse;
+    this.#app = appResponse.Data;
     /**
      * TODO: Right now app settings response returns preference related to UI widget
      * location, which doesn't exist yet for this CRMWebSDK.

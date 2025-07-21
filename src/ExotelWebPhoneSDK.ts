@@ -182,7 +182,7 @@ export default class ExotelWebPhoneSDK {
   }
 
   ToggleMute = () => {
-    this.#call.Mute();
+    this.#call.MuteToggle();
     this._softPhoneCallListenerCallback("mutetoggle", {
       ...this.#call?.callDetails(),
       callFromNumber: this.#exWebClient.callFromNumber,
