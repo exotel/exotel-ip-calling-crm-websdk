@@ -1,4 +1,4 @@
-import { publicKey } from './Constants';
+import { publicKey } from "./Constants";
 import CryptoJS from "crypto-js";
 
 interface ConstructorParams {

@@ -6,7 +6,6 @@ import { User } from "./User";
 import { icoreBaseURL } from "./Constants";
 import { SIPAccountInfo } from "./SipAccountInfo";
 
-
 interface MakeCallCallback {
   (status: "success" | "failed", data: any): void;
 }
@@ -114,24 +113,24 @@ export default class ExotelWebPhoneSDK {
     const callDetails = callObj.callDetails();
     callDetails.callFromNumber = this.#exWebClient.callFromNumber;
     this._softPhoneCallListenerCallback(eventType, callDetails);
-  }
+  };
 
   RegisterEventCallBack = (state: string, sipInfo: SIPAccountInfo) => {
     this._softPhoneRegisterEventCallBack(state);
-  }
+  };
 
   SessionCallback = (state: string, sipInfo: SIPAccountInfo) => {
     console.info("[crm-websdk] SessionCallback", state, "for number...", sipInfo);
     this._softPhoneSessionCallback(state, sipInfo);
-  }
+  };
 
   AcceptCall = () => {
     this.#call?.Answer();
-  }
+  };
 
   HangupCall = () => {
     this.#call?.Hangup();
-  }
+  };
 
   MakeCall = async (number: string, callback: MakeCallCallback) => {
     const payload = {
@@ -171,15 +170,15 @@ export default class ExotelWebPhoneSDK {
       console.error("[crm-websdk] Error:", error);
       callback("failed", error);
     }
-  }
+  };
 
   ToggleHold = () => {
     this.#call?.HoldToggle();
-    this._softPhoneCallListenerCallback(
-      "holdtoggle",
-      { ...this.#call?.callDetails(), callFromNumber: this.#exWebClient.callFromNumber}
-    );
-  }
+    this._softPhoneCallListenerCallback("holdtoggle", {
+      ...this.#call?.callDetails(),
+      callFromNumber: this.#exWebClient.callFromNumber,
+    });
+  };
 
   ToggleMute = () => {
     this.#call.MuteToggle();
@@ -187,16 +186,18 @@ export default class ExotelWebPhoneSDK {
       ...this.#call?.callDetails(),
       callFromNumber: this.#exWebClient.callFromNumber,
     });
-  }
+  };
 
   SendDTMF = (digit: string) => {
     const regex = /^[0-9*#]$/g;
     if (!digit.match(regex)) {
       return console.error(`[crm-websdk] Invalid dtmf input: ${digit}`);
     }
-    if(!this.#call) {
-      return console.error(`[crm-websdk] Cannot send dtmf input when there is no call in-progress`);
+    if (!this.#call) {
+      return console.error(
+        `[crm-websdk] Cannot send dtmf input when there is no call in-progress`
+      );
     }
     this.#call.sendDTMF(digit);
-  }
+  };
 }

@@ -81,7 +81,11 @@ export default class ExotelCRMWebSDK {
     if (response.status === 404) {
       throw new Error(`Failed to load app. App not found.`);
     } else if (!response.ok) {
-      throw new Error(`Error fetching app. Status: ${response.status}, Error: ${JSON.stringify(appResponse["Error"])}`);
+      throw new Error(
+        `Error fetching app. Status: ${
+          response.status
+        }, Error: ${JSON.stringify(appResponse["Error"])}`
+      );
     }
     this.#app = appResponse.Data;
     /**
@@ -93,27 +97,29 @@ export default class ExotelCRMWebSDK {
 
     // Load app settings for the tenant
 
-    response = await fetch(
-      `${icoreBaseURL}/v2/integrations/app_setting`,
-      {
-        method: "GET",
-        headers: { Authorization: this.#accessToken },
-      }
-    );
-    
-    var appSettingResponse= await response.json();
+    response = await fetch(`${icoreBaseURL}/v2/integrations/app_setting`, {
+      method: "GET",
+      headers: { Authorization: this.#accessToken },
+    });
+
+    var appSettingResponse = await response.json();
     if (response.status === 404) {
       throw new Error(`Failed to load app settings. App setting not found.`);
     } else if (!response.ok) {
-      throw new Error(`Error fetching app setting. Status: ${response.status}, Error: ${JSON.stringify(appSettingResponse["Error"])}`);
+      throw new Error(
+        `Error fetching app setting. Status: ${
+          response.status
+        }, Error: ${JSON.stringify(appSettingResponse["Error"])}`
+      );
     }
     this.#appSettings = appSettingResponse;
-
 
     // Load user mapping for the tenant
 
     response = await fetch(
-      `${icoreBaseURL}/v2/integrations/usermapping?user_id=${this.#agentUserID}`,
+      `${icoreBaseURL}/v2/integrations/usermapping?user_id=${
+        this.#agentUserID
+      }`,
       {
         method: "GET",
         headers: {
@@ -126,9 +132,15 @@ export default class ExotelCRMWebSDK {
     const userMappingResponse = await response.json();
 
     if (response.status === 404) {
-      throw new Error(`User mapping not found for user_id: ${this.#agentUserID}`);
-    } else if (userMappingResponse['Code'] >= 400) {
-      throw new Error(`Error fetching user mapping. Status: ${response.status}, Error: ${JSON.stringify(userMappingResponse["Error"])}`);
+      throw new Error(
+        `User mapping not found for user_id: ${this.#agentUserID}`
+      );
+    } else if (userMappingResponse["Code"] >= 400) {
+      throw new Error(
+        `Error fetching user mapping. Status: ${
+          response.status
+        }, Error: ${JSON.stringify(userMappingResponse["Error"])}`
+      );
     }
 
     this.#userData = new User(userMappingResponse.Data);
@@ -142,7 +154,7 @@ export default class ExotelCRMWebSDK {
     if (!this.#app) {
       console.error("[crm-websdk] app must be configured to get sip info");
       return;
-    } 
+    }
 
     const sipAccountInfo: SIPAccountInfo = {
       userName: this.#userData.sipId.split(":")[1], // sipInfo.Username,
