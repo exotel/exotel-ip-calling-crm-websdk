@@ -1,4 +1,4 @@
-import { publicKey } from './Constants';
+import { publicKey } from "./Constants";
 import CryptoJS from "crypto-js";
 
 interface ConstructorParams {
@@ -59,7 +59,7 @@ export class User {
       );
       return decrypted.toString(CryptoJS.enc.Utf8);
     } catch (e) {
-      console.error("error decrypting sip secret", e);
+      console.error("[crm-websdk] error decrypting sip secret", e);
     }
     return "";
   }
