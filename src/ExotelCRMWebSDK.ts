@@ -15,11 +15,11 @@ export default class ExotelCRMWebSDK {
     autoConnectVOIP: boolean = false
   ) {
     if (!accesssToken) {
-      console.error("empty access token passed");
+      console.error("[crm-websdk] empty access token passed");
       return;
     }
     if (!agentUserID) {
-      console.error("empty agentUserID passed");
+      console.error("[crm-websdk] empty agentUserID passed");
       return;
     }
     this.#accessToken = accesssToken;
@@ -46,14 +46,16 @@ export default class ExotelCRMWebSDK {
     try {
       await this.#loadSettings();
     } catch (error) {
-      console.error("Initialization failed ", error);
+      console.error("[crm-websdk] Initialization failed ", error);
       return;
     }
 
     const sipInfo = this.#getSIPInfo();
-    console.info("sipInfo", { sipInfo });
+    console.info("[crm-websdk] sipInfo", { sipInfo });
     if (!sipInfo) {
-      console.warn("No SIP info available, initialization aborted.");
+      console.warn(
+        "[crm-websdk] No SIP info available, initialization aborted."
+      );
       return;
     }
 
@@ -67,7 +69,6 @@ export default class ExotelCRMWebSDK {
     );
   }
 
-
   async #loadSettings() {
     // Load app
 
@@ -76,7 +77,7 @@ export default class ExotelCRMWebSDK {
       headers: { Authorization: this.#accessToken },
     });
 
-    var appResponse=await response.json();
+    var appResponse = await response.json();
     if (response.status === 404) {
       throw new Error(`Failed to load app. App not found.`);
     } else if (!response.ok) {
@@ -131,19 +132,18 @@ export default class ExotelCRMWebSDK {
     }
 
     this.#userData = new User(userMappingResponse.Data);
-
   }
-
 
   #getSIPInfo(): SIPAccountInfo | void {
     if (!this.#userData) {
-      console.error("userData must be configured to get sip info");
+      console.error("[crm-websdk] userData must be configured to get sip info");
       return;
     }
     if (!this.#app) {
-      console.error("app must be configured to get sip info");
+      console.error("[crm-websdk] app must be configured to get sip info");
       return;
-    }
+    } 
+
     const sipAccountInfo: SIPAccountInfo = {
       userName: this.#userData.sipId.split(":")[1], // sipInfo.Username,
       authUser: this.#userData.sipId.split(":")[1], //sipInfo.Username,

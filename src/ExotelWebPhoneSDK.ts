@@ -85,6 +85,7 @@ export default class ExotelWebPhoneSDK {
     if (autoConnectVOIP) {
       this.RegisterDevice();
     }
+    console.info("[crm-websdk] Initialize webphone");
     return this;
   }
 
@@ -120,7 +121,7 @@ export default class ExotelWebPhoneSDK {
   }
 
   SessionCallback = (state: string, sipInfo: SIPAccountInfo) => {
-    console.info("SessionCallback", state, "for number...", sipInfo);
+    console.info("[crm-websdk] SessionCallback", state, "for number...", sipInfo);
     this._softPhoneSessionCallback(state, sipInfo);
   }
 
@@ -160,14 +161,14 @@ export default class ExotelWebPhoneSDK {
       );
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("error making call:", response.statusText, errorText);
+        console.error("[crm-websdk] error making call:", response.statusText, errorText);
         throw new Error(response.statusText);
       }
       const data = await response.json();
-      console.info("successfully placed call:", data);
+      console.info("[crm-websdk] successfully placed call:", data);
       callback("success", data);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("[crm-websdk] Error:", error);
       callback("failed", error);
     }
   }
@@ -191,10 +192,10 @@ export default class ExotelWebPhoneSDK {
   SendDTMF = (digit: string) => {
     const regex = /^[0-9*#]$/g;
     if (!digit.match(regex)) {
-      return console.error(`Invalid dtmf input: ${digit}`);
+      return console.error(`[crm-websdk] Invalid dtmf input: ${digit}`);
     }
     if(!this.#call) {
-      return console.error(`Cannot send dtmf input when there is no call in-progress`);
+      return console.error(`[crm-websdk] Cannot send dtmf input when there is no call in-progress`);
     }
     this.#call.sendDTMF(digit);
   }
