@@ -10,6 +10,18 @@ interface MakeCallCallback {
   (status: "success" | "failed", data: any): void;
 }
 
+class ExotelAPIError extends Error {
+  public readonly statusCode: number;
+  public readonly responseBody: string;
+
+  constructor(statusCode: number, statusText: string, responseBody: string) {
+    super(statusText);
+    this.name = 'ExotelAPIError';
+    this.statusCode = statusCode;
+    this.responseBody = responseBody;
+  }
+}
+
 interface CallEventData {
   callId: string;
   remoteId: string;
@@ -161,7 +173,7 @@ export default class ExotelWebPhoneSDK {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("[crm-websdk] error making call:", response.statusText, errorText);
-        throw new Error(response.statusText);
+        throw new ExotelAPIError(response.status, response.statusText, errorText);
       }
       const data = await response.json();
       console.info("[crm-websdk] successfully placed call:", data);
