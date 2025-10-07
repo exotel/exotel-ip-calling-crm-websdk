@@ -38,11 +38,11 @@ class ExotelCRMWebSDK {
         _ExotelCRMWebSDK_appSettings.set(this, void 0);
         _ExotelCRMWebSDK_userData.set(this, void 0);
         if (!accesssToken) {
-            console.error("empty access token passed");
+            console.error("[crm-websdk] empty access token passed");
             return;
         }
         if (!agentUserID) {
-            console.error("empty agentUserID passed");
+            console.error("[crm-websdk] empty agentUserID passed");
             return;
         }
         __classPrivateFieldSet(this, _ExotelCRMWebSDK_accessToken, accesssToken, "f");
