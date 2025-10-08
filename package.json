@@ -14,7 +14,7 @@
   "author": "Exotel",
   "license": "Apache-2.0",
   "dependencies": {
-    "@exotel-npm-dev/webrtc-client-sdk": "^2.0.1",
+    "@exotel-npm-dev/webrtc-client-sdk": "^3.0.4",
     "crypto-js": "^4.1.1",
     "uuid": "^10.0.0"
   },
