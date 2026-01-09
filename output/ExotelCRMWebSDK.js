@@ -58,10 +58,17 @@ class ExotelCRMWebSDK {
      */
     Initialize(sofPhoneListenerCallback, softPhoneRegisterEventCallBack = null, softPhoneSessionCallback = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield __classPrivateFieldGet(this, _ExotelCRMWebSDK_instances, "m", _ExotelCRMWebSDK_loadSettings).call(this);
+            try {
+                yield __classPrivateFieldGet(this, _ExotelCRMWebSDK_instances, "m", _ExotelCRMWebSDK_loadSettings).call(this);
+            }
+            catch (error) {
+                console.error("[crm-websdk] Initialization failed ", error);
+                return;
+            }
             const sipInfo = __classPrivateFieldGet(this, _ExotelCRMWebSDK_instances, "m", _ExotelCRMWebSDK_getSIPInfo).call(this);
-            console.info("sipInfo", { sipInfo });
+            console.info("[crm-websdk] sipInfo", { sipInfo });
             if (!sipInfo) {
+                console.warn("[crm-websdk] No SIP info available, initialization aborted.");
                 return;
             }
             const webPhone = new ExotelWebPhoneSDK_1.default(__classPrivateFieldGet(this, _ExotelCRMWebSDK_accessToken, "f"), __classPrivateFieldGet(this, _ExotelCRMWebSDK_userData, "f"));
@@ -73,17 +80,18 @@ exports.default = ExotelCRMWebSDK;
 _ExotelCRMWebSDK_accessToken = new WeakMap(), _ExotelCRMWebSDK_agentUserID = new WeakMap(), _ExotelCRMWebSDK_autoConnectVOIP = new WeakMap(), _ExotelCRMWebSDK_app = new WeakMap(), _ExotelCRMWebSDK_appSettings = new WeakMap(), _ExotelCRMWebSDK_userData = new WeakMap(), _ExotelCRMWebSDK_instances = new WeakSet(), _ExotelCRMWebSDK_loadSettings = function _ExotelCRMWebSDK_loadSettings() {
     return __awaiter(this, void 0, void 0, function* () {
         // Load app
-        try {
-            const response = yield fetch(`${Constants_1.icoreBaseURL}/v2/integrations/app`, {
-                method: "GET",
-                headers: { Authorization: __classPrivateFieldGet(this, _ExotelCRMWebSDK_accessToken, "f") },
-            });
-            const appResponse = yield response.json();
-            __classPrivateFieldSet(this, _ExotelCRMWebSDK_app, appResponse.Data, "f");
+        var response = yield fetch(`${Constants_1.icoreBaseURL}/v2/integrations/app`, {
+            method: "GET",
+            headers: { Authorization: __classPrivateFieldGet(this, _ExotelCRMWebSDK_accessToken, "f") },
+        });
+        var appResponse = yield response.json();
+        if (response.status === 404) {
+            throw new Error(`Failed to load app. App not found.`);
         }
-        catch (error) {
-            console.error("error loading app:", error);
+        else if (!response.ok) {
+            throw new Error(`Error fetching app. Status: ${response.status}, Error: ${JSON.stringify(appResponse["Error"])}`);
         }
+        __classPrivateFieldSet(this, _ExotelCRMWebSDK_app, appResponse.Data, "f");
         /**
          * TODO: Right now app settings response returns preference related to UI widget
          * location, which doesn't exist yet for this CRMWebSDK.
@@ -91,39 +99,42 @@ _ExotelCRMWebSDK_accessToken = new WeakMap(), _ExotelCRMWebSDK_agentUserID = new
          * ie make this request only when the UI widget is initialised
          */
         // Load app settings for the tenant
-        try {
-            const settingsResponse = yield fetch(`${Constants_1.icoreBaseURL}/v2/integrations/app_setting`, {
-                method: "GET",
-                headers: { Authorization: __classPrivateFieldGet(this, _ExotelCRMWebSDK_accessToken, "f") },
-            });
-            __classPrivateFieldSet(this, _ExotelCRMWebSDK_appSettings, yield settingsResponse.json(), "f");
+        response = yield fetch(`${Constants_1.icoreBaseURL}/v2/integrations/app_setting`, {
+            method: "GET",
+            headers: { Authorization: __classPrivateFieldGet(this, _ExotelCRMWebSDK_accessToken, "f") },
+        });
+        var appSettingResponse = yield response.json();
+        if (response.status === 404) {
+            throw new Error(`Failed to load app settings. App setting not found.`);
         }
-        catch (error) {
-            console.error("error loading app settings:", error);
+        else if (!response.ok) {
+            throw new Error(`Error fetching app setting. Status: ${response.status}, Error: ${JSON.stringify(appSettingResponse["Error"])}`);
         }
+        __classPrivateFieldSet(this, _ExotelCRMWebSDK_appSettings, appSettingResponse, "f");
         // Load user mapping for the tenant
-        try {
-            const response = yield fetch(`${Constants_1.icoreBaseURL}/v2/integrations/usermapping?user_id=${__classPrivateFieldGet(this, _ExotelCRMWebSDK_agentUserID, "f")}`, {
-                method: "GET",
-                headers: {
-                    Authorization: __classPrivateFieldGet(this, _ExotelCRMWebSDK_accessToken, "f"),
-                    "Content-Type": "application/json",
-                },
-            });
-            const userMappingResponse = yield response.json();
-            __classPrivateFieldSet(this, _ExotelCRMWebSDK_userData, new User_1.User(userMappingResponse.Data), "f");
+        response = yield fetch(`${Constants_1.icoreBaseURL}/v2/integrations/usermapping?user_id=${__classPrivateFieldGet(this, _ExotelCRMWebSDK_agentUserID, "f")}`, {
+            method: "GET",
+            headers: {
+                Authorization: __classPrivateFieldGet(this, _ExotelCRMWebSDK_accessToken, "f"),
+                "Content-Type": "application/json",
+            },
+        });
+        const userMappingResponse = yield response.json();
+        if (response.status === 404) {
+            throw new Error(`User mapping not found for user_id: ${__classPrivateFieldGet(this, _ExotelCRMWebSDK_agentUserID, "f")}`);
         }
-        catch (error) {
-            console.error("error loading user details:", error);
+        else if (userMappingResponse["Code"] >= 400) {
+            throw new Error(`Error fetching user mapping. Status: ${response.status}, Error: ${JSON.stringify(userMappingResponse["Error"])}`);
         }
+        __classPrivateFieldSet(this, _ExotelCRMWebSDK_userData, new User_1.User(userMappingResponse.Data), "f");
     });
 }, _ExotelCRMWebSDK_getSIPInfo = function _ExotelCRMWebSDK_getSIPInfo() {
     if (!__classPrivateFieldGet(this, _ExotelCRMWebSDK_userData, "f")) {
-        console.error("userData must be configured to get sip info");
+        console.error("[crm-websdk] userData must be configured to get sip info");
         return;
     }
     if (!__classPrivateFieldGet(this, _ExotelCRMWebSDK_app, "f")) {
-        console.error("app must be configured to get sip info");
+        console.error("[crm-websdk] app must be configured to get sip info");
         return;
     }
     const sipAccountInfo = {
@@ -139,4 +150,4 @@ _ExotelCRMWebSDK_accessToken = new WeakMap(), _ExotelCRMWebSDK_agentUserID = new
     };
     return sipAccountInfo;
 };
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiRXhvdGVsQ1JNV2ViU0RLLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vc3JjL0V4b3RlbENSTVdlYlNESy50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLDJDQUFzRTtBQUN0RSxpQ0FBOEI7QUFFOUIsNEVBQW9EO0FBRXBELDREQUE0RDtBQUM1RCxNQUFzQixlQUFlO0lBS25DLFlBQ0UsWUFBb0IsRUFDcEIsV0FBbUIsRUFDbkIsa0JBQTJCLEtBQUs7O1FBUGxDLCtDQUFxQjtRQUNyQiwrQ0FBcUI7UUFDckIsbURBQTBCO1FBb0IxQix1Q0FBbUM7UUFDbkMsK0NBQWtCO1FBQ2xCLDRDQUFnQjtRQWZkLElBQUksQ0FBQyxZQUFZLEVBQUU7WUFDakIsT0FBTyxDQUFDLEtBQUssQ0FBQywyQkFBMkIsQ0FBQyxDQUFDO1lBQzNDLE9BQU87U0FDUjtRQUNELElBQUksQ0FBQyxXQUFXLEVBQUU7WUFDaEIsT0FBTyxDQUFDLEtBQUssQ0FBQywwQkFBMEIsQ0FBQyxDQUFDO1lBQzFDLE9BQU87U0FDUjtRQUNELHVCQUFBLElBQUksZ0NBQWdCLFlBQVksTUFBQSxDQUFDO1FBQ2pDLHVCQUFBLElBQUksZ0NBQWdCLFdBQVcsTUFBQSxDQUFDO1FBQ2hDLHVCQUFBLElBQUksb0NBQW9CLGVBQWUsTUFBQSxDQUFDO0lBQzFDLENBQUM7SUFNRDs7Ozs7O09BTUc7SUFDRyxVQUFVLENBQ2Qsd0JBQTZCLEVBQzdCLDhCQUE4QixHQUFHLElBQUksRUFDckMsd0JBQXdCLEdBQUcsSUFBSTs7WUFFL0IsTUFBTSx1QkFBQSxJQUFJLGlFQUFjLE1BQWxCLElBQUksQ0FBZ0IsQ0FBQztZQUMzQixNQUFNLE9BQU8sR0FBRyx1QkFBQSxJQUFJLCtEQUFZLE1BQWhCLElBQUksQ0FBYyxDQUFDO1lBQ25DLE9BQU8sQ0FBQyxJQUFJLENBQUMsU0FBUyxFQUFFLEVBQUMsT0FBTyxFQUFDLENBQUMsQ0FBQztZQUNuQyxJQUFJ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
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiRXhvdGVsQ1JNV2ViU0RLLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vc3JjL0V4b3RlbENSTVdlYlNESy50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLDJDQUFzRTtBQUN0RSxpQ0FBOEI7QUFFOUIsNEVBQW9EO0FBRXBELDREQUE0RDtBQUM1RCxNQUFxQixlQUFlO0lBS2xDLFlBQ0UsWUFBb0IsRUFDcEIsV0FBbUIsRUFDbkIsa0JBQTJCLEtBQUs7O1FBUGxDLCtDQUFxQjtRQUNyQiwrQ0FBcUI7UUFDckIsbURBQTBCO1FBb0IxQix1Q0FBbUM7UUFDbkMsK0NBQWtCO1FBQ2xCLDRDQUFnQjtRQWZkLElBQUksQ0FBQyxZQUFZLEVBQUU7WUFDakIsT0FBTyxDQUFDLEtBQUssQ0FBQyx3Q0FBd0MsQ0FBQyxDQUFDO1lBQ3hELE9BQU87U0FDUjtRQUNELElBQUksQ0FBQyxXQUFXLEVBQUU7WUFDaEIsT0FBTyxDQUFDLEtBQUssQ0FBQyx1Q0FBdUMsQ0FBQyxDQUFDO1lBQ3ZELE9BQU87U0FDUjtRQUNELHVCQUFBLElBQUksZ0NBQWdCLFlBQVksTUFBQSxDQUFDO1FBQ2pDLHVCQUFBLElBQUksZ0NBQWdCLFdBQVcsTUFBQSxDQUFDO1FBQ2hDLHVCQUFBLElBQUksb0NBQW9CLGVBQWUsTUFBQSxDQUFDO0lBQzFDLENBQUM7SUFNRDs7Ozs7O09BTUc7SUFDRyxVQUFVLENBQ2Qsd0JBQTZCLEVBQzdCLDhCQUE4QixHQUFHLElBQUksRUFDckMsd0JBQXdCLEdBQUcsSUFBSTs7WUFFL0IsSUFBSTtnQkFDRixNQUFNLHVCQUFBLElBQUksaUVBQWMsTUFBbEIsSUFBSSxDQUFnQixDQUFDO2FBQzVCO1lBQUMsT0FBTyxLQUFLLEVBQUU7Z0JBQ2QsT0FBTyxDQUFDLEtBQUssQ0FBQyxxQ0FBcUMsRUFBRSxLQUFLLENBQUMsQ0FBQztnQkFDNUQsT0FBTzthQUNSO1lBRUQsTUFBTSxPQUFPLEdBQUcsdUJB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

@@ -16,12 +16,30 @@ Refer to sample project [here](https://github.com/exotel/exotel-voip-websdk-crm-
 #### Steps:
 1. You can install the package using npm:
 ```bash
-npm install git+https://github.com/exotel/exotel-ip-calling-crm-websdk
+npm install @exotel-npm-dev/exotel-ip-calling-crm-websdk
+```
+
+Or directly from GitHub:
+
+```bash
+npm install git+https://github.com/exotel/exotel-ip-calling-crm-websdk.git
 ```
 2. Simply import the ExotelCRMWebSDK in your code like this:
 
 ```js
-import ExotelCRMWebSDK from "exotel-ip-calling-crm-websdk";
+import ExotelCRMWebSDK from "@exotel-npm-dev/exotel-ip-calling-crm-websdk";
+```
+
+### TypeScript support
+
+The npm package publishes:
+- Compiled JavaScript in `output/` (runtime)
+- Type declarations in `output/*.d.ts` (TypeScript typings)
+
+If your build pipeline can compile TypeScript from dependencies, the TypeScript sources are also shipped under `src/` and can be imported directly (advanced usage), e.g.:
+
+```ts
+import ExotelCRMWebSDK from "@exotel-npm-dev/exotel-ip-calling-crm-websdk/src/ExotelCRMWebSDK";
 ```
 
 ### For Non-npm users:
@@ -40,7 +58,7 @@ npm install
 
 4. Run the following command to build the webpack from root directory: 
 ```bash
-npx webpack
+npm run bundle
 ```
 
 5. Build command should create a folder called  **'target'** in the same directory.
@@ -59,6 +77,18 @@ npx webpack
 
 7. You can now utilize the **'crmBundle.js'** file by including it as a script in your project.. 
 ```js
+<script src="./target/crmBundle.js"></script>
+```
+
+### Non-npm users (recommended): download from GitHub Release
+
+Every tagged release (tag format `v*`) automatically uploads the pre-built bundle as GitHub Release assets:
+- `crm-websdk-target.zip`
+- `target/crmBundle.js` (+ `*.wav` assets)
+
+Download the zip from the latest GitHub Release and include it in your project:
+
+```html
 <script src="./target/crmBundle.js"></script>
 ```
 
