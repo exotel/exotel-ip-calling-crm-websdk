@@ -1,15 +1,42 @@
 {
-  "name": "exotel-ip-calling-crm-websdk",
+  "name": "@exotel-npm-dev/exotel-ip-calling-crm-websdk",
   "version": "1.3.0",
   "description": "Exotel's crm websdk for IP calling integration",
-  "main": "output/ExotelCRMWebSDK.js",
+  "main": "output/index.js",
+  "types": "output/index.d.ts",
+  "browser": "./output/index.js",
+  "exports": {
+    ".": {
+      "types": "./output/index.d.ts",
+      "import": "./output/index.js",
+      "default": "./output/index.js"
+    },
+    "./bundle": "./target/crmBundle.js",
+    "./src/*": "./src/*",
+    "./output/*": "./output/*",
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "output/",
+    "src/",
+    "target/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build": "tsc",
+    "bundle": "webpack --config webpack.config.js",
+    "build:all": "npm run build && npm run bundle",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ExoAbhishek/exotel-ip-calling-crm-websdk"
+    "url": "git+https://github.com/ExoAbhishek/exotel-ip-calling-crm-websdk.git"
   },
   "author": "Exotel",
   "license": "Apache-2.0",
