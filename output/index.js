@@ -17,7 +17,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ExotelWebPhoneSDK = exports.ExotelCRMWebSDK = exports.default = void 0;
+exports.LogManager = exports.ExotelWebPhoneSDK = exports.ExotelCRMWebSDK = exports.default = void 0;
 var ExotelCRMWebSDK_1 = require("./ExotelCRMWebSDK");
 Object.defineProperty(exports, "default", { enumerable: true, get: function () { return __importDefault(ExotelCRMWebSDK_1).default; } });
 var ExotelCRMWebSDK_2 = require("./ExotelCRMWebSDK");
@@ -27,4 +27,7 @@ Object.defineProperty(exports, "ExotelWebPhoneSDK", { enumerable: true, get: fun
 __exportStar(require("./Constants"), exports);
 __exportStar(require("./SipAccountInfo"), exports);
 __exportStar(require("./User"), exports);
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi9zcmMvaW5kZXgudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSxxREFBNEM7QUFBbkMsMkhBQUEsT0FBTyxPQUFBO0FBQ2hCLHFEQUErRDtBQUF0RCxtSUFBQSxPQUFPLE9BQW1CO0FBQ25DLHlEQUFtRTtBQUExRCx1SUFBQSxPQUFPLE9BQXFCO0FBQ3JDLDhDQUE0QjtBQUM1QixtREFBaUM7QUFDakMseUNBQXVCIn0=
+__exportStar(require("./diagnostics"), exports);
+var logging_1 = require("./logging");
+Object.defineProperty(exports, "LogManager", { enumerable: true, get: function () { return logging_1.LogManager; } });
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi9zcmMvaW5kZXgudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSxxREFBNEM7QUFBbkMsMkhBQUEsT0FBTyxPQUFBO0FBQ2hCLHFEQUErRDtBQUF0RCxtSUFBQSxPQUFPLE9BQW1CO0FBQ25DLHlEQUFtRTtBQUExRCx1SUFBQSxPQUFPLE9BQXFCO0FBQ3JDLDhDQUE0QjtBQUM1QixtREFBaUM7QUFDakMseUNBQXVCO0FBQ3ZCLGdEQUE4QjtBQUM5QixxQ0FBdUM7QUFBOUIscUdBQUEsVUFBVSxPQUFBIn0=

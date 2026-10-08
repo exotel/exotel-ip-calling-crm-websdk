@@ -40,6 +40,18 @@ interface RegisterListenerCallback {
   (event: string): void;
 }
 
+/**
+ * Soft-phone session events from webrtc-client-sdk.
+ * error stays 3rd for backward compat; eventData is optional 4th for structured payloads
+ * (e.g. init-get-stats { pc, callId, username }).
+ */
+type SoftPhoneSessionCallback = (
+  state: string,
+  phone?: string | SIPAccountInfo,
+  error?: any,
+  eventData?: any
+) => void;
+
 export default class ExotelWebPhoneSDK {
   #accessToken: string;
   #user: User;
@@ -48,7 +60,7 @@ export default class ExotelWebPhoneSDK {
   _softPhoneCallListenerCallback: CallListenerCallback;
   #exWebClient: ExotelWebClient;
   #sipInfo: SIPAccountInfo;
-  _softPhoneSessionCallback: any;
+  _softPhoneSessionCallback: SoftPhoneSessionCallback;
 
   #call: Call;
 
@@ -62,7 +74,7 @@ export default class ExotelWebPhoneSDK {
     callListenerCallback: CallListenerCallback,
     autoConnectVOIP = false,
     registerEventCallBack: RegisterListenerCallback | null,
-    sessionCallback: any
+    sessionCallback: SoftPhoneSessionCallback | null
   ): ExotelWebPhoneSDK {
     this.#sipInfo = sipInfo;
     this._softPhoneCallListenerCallback = callListenerCallback;
@@ -89,6 +101,7 @@ export default class ExotelWebPhoneSDK {
   }
 
   RegisterDevice = () => {
+    this.#exWebClient.enableAutoRetry();
     this.#exWebClient.DoRegister();
   }
 
@@ -119,9 +132,16 @@ export default class ExotelWebPhoneSDK {
     this._softPhoneRegisterEventCallBack(state);
   };
 
-  SessionCallback = (state: string, sipInfo: SIPAccountInfo) => {
+  SessionCallback = (
+    state: string,
+    sipInfo: SIPAccountInfo,
+    error?: any,
+    eventData?: any
+  ) => {
     console.info("[crm-websdk] SessionCallback", state, "for number...", sipInfo);
-    this._softPhoneSessionCallback(state, sipInfo);
+    if (this._softPhoneSessionCallback) {
+      this._softPhoneSessionCallback(state, sipInfo, error, eventData);
+    }
   };
 
   AcceptCall = () => {
@@ -199,5 +219,42 @@ export default class ExotelWebPhoneSDK {
       );
     }
     this.#call.sendDTMF(digit);
+  };
+
+  /**
+   * Switch the active microphone. Forwards to webrtc-client-sdk's
+   * changeAudioInputDevice (replaces the sender track mid-call when possible).
+   */
+  ChangeAudioInputDevice = (
+    deviceId: string,
+    onSuccess?: (stream?: MediaStream) => void,
+    onError?: (error: string) => void,
+    forceDeviceChange = true
+  ) => {
+    if (!this.#exWebClient || typeof this.#exWebClient.changeAudioInputDevice !== "function") {
+      const msg = "ChangeAudioInputDevice unavailable";
+      console.error(`[crm-websdk] ${msg}`);
+      if (onError) onError(msg);
+      return;
+    }
+    this.#exWebClient.changeAudioInputDevice(deviceId, onSuccess, onError, forceDeviceChange);
+  };
+
+  /**
+   * Switch the active speaker / ringtone sink via setSinkId where supported.
+   */
+  ChangeAudioOutputDevice = (
+    deviceId: string,
+    onSuccess?: () => void,
+    onError?: (error: string) => void,
+    forceDeviceChange = true
+  ) => {
+    if (!this.#exWebClient || typeof this.#exWebClient.changeAudioOutputDevice !== "function") {
+      const msg = "ChangeAudioOutputDevice unavailable";
+      console.error(`[crm-websdk] ${msg}`);
+      if (onError) onError(msg);
+      return;
+    }
+    this.#exWebClient.changeAudioOutputDevice(deviceId, onSuccess, onError, forceDeviceChange);
   };
 }

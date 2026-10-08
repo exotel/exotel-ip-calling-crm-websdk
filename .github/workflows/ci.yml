@@ -10,23 +10,40 @@ on:
       - master
       - main
 
+env:
+  # Branch of rammmukulExotel/webrtc-client-sdk to build against.
+  WEBRTC_CLIENT_SDK_REF: CCM-4206-add-support-for-call-quality
+
 jobs:
   build:
     name: Build (tsc + webpack)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout CRM websdk
         uses: actions/checkout@v4
+        with:
+          path: exotel-ip-calling-crm-websdk
+
+      # npm cannot install a monorepo subdirectory from git (::path: is pnpm-only).
+      # Check out the SDK repo as a sibling so file:../webrtc-client-sdk/... resolves.
+      - name: Checkout webrtc-client-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: rammmukulExotel/webrtc-client-sdk
+          ref: ${{ env.WEBRTC_CLIENT_SDK_REF }}
+          path: webrtc-client-sdk
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: exotel-ip-calling-crm-websdk/package-lock.json
 
       - name: Install deps
+        working-directory: exotel-ip-calling-crm-websdk
         run: npm ci
 
       - name: Build (tsc + webpack bundle)
+        working-directory: exotel-ip-calling-crm-websdk
         run: npm run build:all
-

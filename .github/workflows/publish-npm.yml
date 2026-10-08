@@ -13,31 +13,48 @@ on:
         type: string
         required: true
         default: latest
+      webrtc_client_sdk_ref:
+        description: "Branch/tag/SHA of rammmukulExotel/webrtc-client-sdk"
+        type: string
+        required: true
+        default: CCM-4206-add-support-for-call-quality
 
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout CRM websdk
         uses: actions/checkout@v4
+        with:
+          path: exotel-ip-calling-crm-websdk
+
+      - name: Checkout webrtc-client-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: rammmukulExotel/webrtc-client-sdk
+          ref: ${{ inputs.webrtc_client_sdk_ref }}
+          path: webrtc-client-sdk
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: exotel-ip-calling-crm-websdk/package-lock.json
           registry-url: https://registry.npmjs.org/
 
       - name: Install deps
+        working-directory: exotel-ip-calling-crm-websdk
         run: npm ci
 
       - name: Build (tsc + webpack bundle)
+        working-directory: exotel-ip-calling-crm-websdk
         run: npm run build:all
 
       - name: Publish to npm
         if: ${{ inputs.publish }}
+        working-directory: exotel-ip-calling-crm-websdk
         run: npm publish --tag "${{ inputs.tag }}"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-

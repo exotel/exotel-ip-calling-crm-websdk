@@ -160,7 +160,8 @@ export default class ExotelCRMWebSDK {
       userName: this.#userData.sipId.split(":")[1], // sipInfo.Username,
       authUser: this.#userData.sipId.split(":")[1], //sipInfo.Username,
       sipdomain: this.#app.ExotelAccountSid + "." + voipDomainSIP, //sipInfo.Domain,
-      domain: voipDomain + ":443", // sipInfo.HostServer + ":" + sipInfo.Port,
+      // voipDomain already includes ":443" (see Constants.ts)
+      domain: voipDomain, // sipInfo.HostServer + ":" + sipInfo.Port,
       displayname: this.#userData.exotelUserName, //sipInfo.DisplayName,
       secret: this.#userData.sipSecret, //sipInfo.Password,
       port: "443", //sipInfo.Port,

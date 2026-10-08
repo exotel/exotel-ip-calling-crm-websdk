@@ -8,20 +8,35 @@ on:
 permissions:
   contents: write
 
+env:
+  WEBRTC_CLIENT_SDK_REF: CCM-4206-add-support-for-call-quality
+
 jobs:
   build-and-upload:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: exotel-ip-calling-crm-websdk
     steps:
-      - name: Checkout
+      - name: Checkout CRM websdk
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          path: exotel-ip-calling-crm-websdk
+
+      - name: Checkout webrtc-client-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: rammmukulExotel/webrtc-client-sdk
+          ref: ${{ env.WEBRTC_CLIENT_SDK_REF }}
+          path: webrtc-client-sdk
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: exotel-ip-calling-crm-websdk/package-lock.json
 
       - name: Install deps
         run: npm ci
@@ -61,9 +76,7 @@ jobs:
           tag_name: ${{ steps.pkg.outputs.tag }}
           generate_release_notes: true
           files: |
-            crm-websdk-target.zip
-            target/crmBundle.js
-            target/crmBundle.js.LICENSE.txt
-            target/*.wav
-
-
+            exotel-ip-calling-crm-websdk/crm-websdk-target.zip
+            exotel-ip-calling-crm-websdk/target/crmBundle.js
+            exotel-ip-calling-crm-websdk/target/crmBundle.js.LICENSE.txt
+            exotel-ip-calling-crm-websdk/target/*.wav
