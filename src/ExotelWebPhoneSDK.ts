@@ -1,7 +1,5 @@
 // @ts-ignore
 import { ExotelWebClient } from "@exotel-npm-dev/webrtc-client-sdk";
-// @ts-ignore
-import { Call } from "@exotel-npm-dev/webrtc-client-sdk/src/api/callAPI/Call";
 import { User } from "./User";
 import { icoreBaseURL } from "./Constants";
 import { SIPAccountInfo } from "./SipAccountInfo";
@@ -52,6 +50,19 @@ type SoftPhoneSessionCallback = (
   eventData?: any
 ) => void;
 
+/**
+ * Instance returned by webrtc-client-sdk Call(). That file exports a
+ * constructor function, which TypeScript will not use as a type.
+ */
+interface Call {
+  Answer(): void;
+  Hangup(): void;
+  MuteToggle(): void;
+  HoldToggle(): void;
+  callDetails(): any;
+  sendDTMF(digit: string): void;
+}
+
 export default class ExotelWebPhoneSDK {
   #accessToken: string;
   #user: User;
@@ -63,6 +74,9 @@ export default class ExotelWebPhoneSDK {
   _softPhoneSessionCallback: SoftPhoneSessionCallback;
 
   #call: Call;
+  // One chain so a delayed UNREGISTER cannot land after the next REGISTER.
+  #opTail: Promise<void> = Promise.resolve();
+  #opGen = 0;
 
   constructor(accessToken: string, user: User) {
     this.#accessToken = accessToken; // This access token is understood by icore which makes this SDK dependent on it
@@ -100,14 +114,76 @@ export default class ExotelWebPhoneSDK {
     return this;
   }
 
-  RegisterDevice = () => {
-    this.#exWebClient.enableAutoRetry();
-    this.#exWebClient.DoRegister();
-  }
+  /**
+   * Latest intent wins. A newer ON or OFF bumps the generation so the older
+   * chain link returns without sending SIP.
+   */
+  #enqueue = (work: (gen: number) => Promise<void>): Promise<void> => {
+    const gen = ++this.#opGen;
+    const run = this.#opTail.then(() => work(gen));
+    this.#opTail = run.then(
+      () => undefined,
+      () => undefined
+    );
+    return run;
+  };
 
-  UnRegisterDevice = () => {
-    this.#exWebClient.UnRegister(this.#sipInfo);
-  }
+  RegisterDevice = (): Promise<void> => {
+    const client = this.#exWebClient as ExotelWebClient & {
+      cancelPendingUnregister?: () => void;
+    };
+    // Drop a delayed UNREGISTER before this REGISTER is sent.
+    if (typeof client.cancelPendingUnregister === "function") {
+      client.cancelPendingUnregister();
+    }
+    return this.#enqueue(async (gen) => {
+      if (gen !== this.#opGen) return;
+      this.#exWebClient.enableAutoRetry();
+      this.#exWebClient.DoRegister();
+    });
+  };
+
+  UnRegisterDevice = (): Promise<void> => {
+    const client = this.#exWebClient as ExotelWebClient & {
+      cancelPendingRegister?: () => void;
+      cancelPendingUnregister?: () => void;
+      unregisterHandoff?: (() => void) | null;
+    };
+    if (typeof client.cancelPendingRegister === "function") {
+      client.cancelPendingRegister();
+    }
+    if (typeof client.cancelPendingUnregister === "function") {
+      client.cancelPendingUnregister();
+    }
+    return this.#enqueue(async (gen) => {
+      if (gen !== this.#opGen) return;
+      this.#exWebClient.disableAutoRetry();
+      await new Promise<void>((resolve) => {
+        if (gen !== this.#opGen) {
+          resolve();
+          return;
+        }
+        const phone = client as ExotelWebClient & {
+          pendingUnregisterTimer?: ReturnType<typeof setTimeout> | null;
+          finishUnregisterHandoff?: () => void;
+        };
+        client.unregisterHandoff = resolve;
+        this.#exWebClient.UnRegister();
+        // Older webrtc clients have no handoff. Resolve after the same 500ms
+        // delay unregister() uses so the next REGISTER cannot overtake it.
+        if (typeof client.cancelPendingUnregister !== "function") {
+          client.unregisterHandoff = null;
+          setTimeout(resolve, 500);
+          return;
+        }
+        // unregister() already resolved the handoff, or it never scheduled
+        // the delay (nothing will call the handoff).
+        if (client.unregisterHandoff && !phone.pendingUnregisterTimer) {
+          phone.finishUnregisterHandoff?.();
+        }
+      });
+    });
+  };
 
   /**
    * #callListenerCallback is a wrapper over the listener callback

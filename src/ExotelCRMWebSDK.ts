@@ -3,16 +3,29 @@ import { User } from "./User";
 import { SIPAccountInfo } from "./SipAccountInfo";
 import ExotelWebPhoneSDK from "./ExotelWebPhoneSDK";
 
+/**
+ * Dashboard softphone context. Omitted for CRM callers, who keep the
+ * hardcoded registrar and the app's ExotelAccountSid.
+ */
+export type SipRegisterContext = {
+  accountSid: string;
+  region: string;
+  voipDomain: string;
+  icoreBaseURL?: string;
+};
+
 // Fetches account details, user details, and their settings
 export default class ExotelCRMWebSDK {
   #accessToken: string;
   #agentUserID: string;
   #autoConnectVOIP: boolean;
+  #sipContext: SipRegisterContext | null;
 
   constructor(
     accesssToken: string,
     agentUserID: string,
-    autoConnectVOIP: boolean = false
+    autoConnectVOIP: boolean = false,
+    sipContext: SipRegisterContext | null = null
   ) {
     if (!accesssToken) {
       console.error("[crm-websdk] empty access token passed");
@@ -25,6 +38,7 @@ export default class ExotelCRMWebSDK {
     this.#accessToken = accesssToken;
     this.#agentUserID = agentUserID;
     this.#autoConnectVOIP = autoConnectVOIP;
+    this.#sipContext = sipContext;
   }
 
   #app: { ExotelAccountSid: string };
@@ -47,16 +61,13 @@ export default class ExotelCRMWebSDK {
       await this.#loadSettings();
     } catch (error) {
       console.error("[crm-websdk] Initialization failed ", error);
-      return;
+      throw error;
     }
 
     const sipInfo = this.#getSIPInfo();
     console.info("[crm-websdk] sipInfo", { sipInfo });
     if (!sipInfo) {
-      console.warn(
-        "[crm-websdk] No SIP info available, initialization aborted."
-      );
-      return;
+      throw new Error("[crm-websdk] No SIP info available, initialization aborted.");
     }
 
     const webPhone = new ExotelWebPhoneSDK(this.#accessToken, this.#userData);
@@ -69,10 +80,17 @@ export default class ExotelCRMWebSDK {
     );
   }
 
-  async #loadSettings() {
-    // Load app
+  #icoreBase(): string {
+    const fromContext = this.#sipContext && this.#sipContext.icoreBaseURL;
+    return (fromContext || icoreBaseURL).replace(/\/$/, "");
+  }
 
-    var response = await fetch(`${icoreBaseURL}/v2/integrations/app`, {
+  async #loadSettings() {
+    const base = this.#icoreBase();
+    // Load app, then app settings, then usermapping. SIP info is built only
+    // after the usermapping await, so a first-time CCM insert is finished.
+
+    var response = await fetch(`${base}/v2/integrations/app`, {
       method: "GET",
       headers: { Authorization: this.#accessToken },
     });
@@ -97,7 +115,7 @@ export default class ExotelCRMWebSDK {
 
     // Load app settings for the tenant
 
-    response = await fetch(`${icoreBaseURL}/v2/integrations/app_setting`, {
+    response = await fetch(`${base}/v2/integrations/app_setting`, {
       method: "GET",
       headers: { Authorization: this.#accessToken },
     });
@@ -116,10 +134,15 @@ export default class ExotelCRMWebSDK {
 
     // Load user mapping for the tenant
 
+    const params = new URLSearchParams({ user_id: this.#agentUserID });
+    if (this.#sipContext && this.#sipContext.region) {
+      params.set("region", this.#sipContext.region);
+    }
+    if (this.#sipContext && this.#sipContext.accountSid) {
+      params.set("account_sid", this.#sipContext.accountSid);
+    }
     response = await fetch(
-      `${icoreBaseURL}/v2/integrations/usermapping?user_id=${
-        this.#agentUserID
-      }`,
+      `${base}/v2/integrations/usermapping?${params.toString()}`,
       {
         method: "GET",
         headers: {
@@ -156,12 +179,17 @@ export default class ExotelCRMWebSDK {
       return;
     }
 
+    const accountSid =
+      (this.#sipContext && this.#sipContext.accountSid) ||
+      this.#app.ExotelAccountSid;
+    const wssDomain =
+      (this.#sipContext && this.#sipContext.voipDomain) || voipDomain;
     const sipAccountInfo: SIPAccountInfo = {
       userName: this.#userData.sipId.split(":")[1], // sipInfo.Username,
       authUser: this.#userData.sipId.split(":")[1], //sipInfo.Username,
-      sipdomain: this.#app.ExotelAccountSid + "." + voipDomainSIP, //sipInfo.Domain,
+      sipdomain: accountSid + "." + voipDomainSIP, //sipInfo.Domain,
       // voipDomain already includes ":443" (see Constants.ts)
-      domain: voipDomain, // sipInfo.HostServer + ":" + sipInfo.Port,
+      domain: wssDomain, // sipInfo.HostServer + ":" + sipInfo.Port,
       displayname: this.#userData.exotelUserName, //sipInfo.DisplayName,
       secret: this.#userData.sipSecret, //sipInfo.Password,
       port: "443", //sipInfo.Port,

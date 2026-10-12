@@ -42,8 +42,8 @@ export default class ExotelWebPhoneSDK {
     _softPhoneSessionCallback: SoftPhoneSessionCallback;
     constructor(accessToken: string, user: User);
     Initialize(sipInfo: SIPAccountInfo, callListenerCallback: CallListenerCallback, autoConnectVOIP: boolean | undefined, registerEventCallBack: RegisterListenerCallback | null, sessionCallback: SoftPhoneSessionCallback | null): ExotelWebPhoneSDK;
-    RegisterDevice: () => void;
-    UnRegisterDevice: () => void;
+    RegisterDevice: () => Promise<void>;
+    UnRegisterDevice: () => Promise<void>;
     /**
      * #callListenerCallback is a wrapper over the listener callback
      * provided at the time of initialisation to allow us to log stuff
