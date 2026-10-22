@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -31,14 +33,29 @@ jobs:
       - name: Install npm 12 (stage command)
         run: npm install -g npm@12.2.1
 
+      # npm pack runs the prepare script, which needs the dev dependencies (tsc).
+      - name: Install deps for packing
+        run: npm ci --ignore-scripts
+
       - name: Check whether this version is already on npm
         id: check
+        env:
+          BEFORE: ${{ github.event.before }}
         run: |
           NAME=$(node -p "require('./package.json').name")
           VERSION=$(node -p "require('./package.json').version")
           if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
             echo "published=false" >> "$GITHUB_OUTPUT"
             echo "$NAME@$VERSION is already on npm. Nothing to stage."
+            # Packaged files changed under an already-published version: they would never ship.
+            if [ "$BEFORE" != "0000000000000000000000000000000000000000" ] \
+              && ! bash .github/scripts/publishable-changes.sh "$BEFORE" "$GITHUB_SHA"; then
+              echo "::error::Files in the npm package changed, but $NAME@$VERSION is already published. Bump the version in package.json."
+              exit 1
+            fi
+          elif npm stage list "$NAME" 2>/dev/null | grep -q -F -w "$VERSION"; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION is already staged. Approve it with npm stage approve."
           else
             echo "published=true" >> "$GITHUB_OUTPUT"
             echo "$NAME@$VERSION is new. Staging."
