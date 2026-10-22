@@ -39,6 +39,9 @@ jobs:
           if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
             echo "published=false" >> "$GITHUB_OUTPUT"
             echo "$NAME@$VERSION is already on npm. Nothing to stage."
+          elif npm stage list "$NAME" 2>/dev/null | grep -q -F -w "$VERSION"; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION is already staged. Approve it with npm stage approve."
           else
             echo "published=true" >> "$GITHUB_OUTPUT"
             echo "$NAME@$VERSION is new. Staging."
