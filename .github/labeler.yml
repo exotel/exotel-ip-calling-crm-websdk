@@ -1,0 +1,11 @@
+ci:
+  - .github/**/*
+
+src:
+  - src/**/*
+
+build:
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - webpack.config.js
