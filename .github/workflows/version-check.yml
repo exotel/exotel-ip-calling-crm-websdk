@@ -33,12 +33,17 @@ jobs:
           NAME=$(node -p "require('./package.json').name")
           VERSION=$(node -p "require('./package.json').version")
 
-          # Only PRs that change the version need a new one. Other PRs skip the check.
           git fetch -q origin "$BASE_REF"
           BASE_VERSION=$(git show "origin/$BASE_REF:package.json" \
             | node -e 'let s=""; process.stdin.on("data", d => s += d).on("end", () => console.log(JSON.parse(s).version))')
+
+          # Without a version bump, the PR may only change files outside the npm package.
           if [ "$VERSION" = "$BASE_VERSION" ]; then
-            echo "Version unchanged ($VERSION). Skipping the new-version check."
+            if ! bash .github/scripts/publishable-changes.sh "origin/$BASE_REF" HEAD; then
+              echo "::error::Files in the npm package changed, but the version is still $VERSION. Bump the version in package.json."
+              exit 1
+            fi
+            echo "Version unchanged ($VERSION) and no packaged files changed. OK."
             exit 0
           fi
 
