@@ -46,7 +46,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ExoAbhishek/exotel-ip-calling-crm-websdk.git"
+    "url": "git+https://github.com/exotel/exotel-ip-calling-crm-websdk.git"
   },
   "author": "Exotel",
   "license": "Apache-2.0",
