@@ -1,6 +1,6 @@
 {
   "name": "@exotel-npm-dev/exotel-ip-calling-crm-websdk",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "description": "Exotel's crm websdk for IP calling integration",
   "main": "output/index.js",
   "types": "output/index.d.ts",
