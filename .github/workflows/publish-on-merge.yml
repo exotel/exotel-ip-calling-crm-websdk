@@ -1,0 +1,110 @@
+name: Publish and release on merge
+
+# Runs on every push to main. Publishes to npm only when package.json's version
+# is not on npm yet, then tags the release and attaches the browser bundle.
+# Existing versions are skipped, never overwritten.
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      published: ${{ steps.check.outputs.published }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: https://registry.npmjs.org/
+
+      - name: Check whether this version is already on npm
+        id: check
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION is already on npm. Skipping publish."
+          else
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION is new. Publishing."
+          fi
+
+      - name: Install deps
+        if: steps.check.outputs.published == 'true'
+        run: npm ci
+
+      - name: Build
+        if: steps.check.outputs.published == 'true'
+        run: npm run build:all
+
+      - name: Publish
+        if: steps.check.outputs.published == 'true'
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  release:
+    name: Tag and GitHub release
+    needs: publish
+    if: needs.publish.outputs.published == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build:all
+
+      - name: Create and push tag
+        env:
+          TAG: v${{ needs.publish.outputs.version }}
+        run: |
+          if [ -n "$(git ls-remote --tags origin "refs/tags/$TAG")" ]; then
+            echo "::error::Tag $TAG already exists. Refusing to move it."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+      - name: Zip bundle (target/)
+        run: |
+          cd target
+          zip -r ../crm-websdk-target.zip .
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.publish.outputs.version }}
+          generate_release_notes: true
+          files: |
+            crm-websdk-target.zip
+            target/crmBundle.js
+            target/crmBundle.js.LICENSE.txt
+            target/*.wav
