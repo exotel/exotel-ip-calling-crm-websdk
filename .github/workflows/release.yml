@@ -68,11 +68,24 @@ jobs:
           cd target
           zip -r ../crm-websdk-target.zip .
 
+      - name: Extract release notes from CHANGELOG.md
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          awk -v v="$VERSION" '
+            /^## / { if (found) exit; if ($2 == v) found = 1; next }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::error::No section for $VERSION in CHANGELOG.md"
+            exit 1
+          fi
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ inputs.version }}
-          generate_release_notes: true
+          body_path: release-notes.md
           files: |
             crm-websdk-target.zip
             target/crmBundle.js
