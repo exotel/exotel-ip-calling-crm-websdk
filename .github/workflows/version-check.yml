@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -25,9 +27,20 @@ jobs:
           node-version: 20
 
       - name: Fail if version already published or tagged
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
           NAME=$(node -p "require('./package.json').name")
           VERSION=$(node -p "require('./package.json').version")
+
+          # Only PRs that change the version need a new one. Other PRs skip the check.
+          git fetch -q origin "$BASE_REF"
+          BASE_VERSION=$(git show "origin/$BASE_REF:package.json" \
+            | node -e 'let s=""; process.stdin.on("data", d => s += d).on("end", () => console.log(JSON.parse(s).version))')
+          if [ "$VERSION" = "$BASE_VERSION" ]; then
+            echo "Version unchanged ($VERSION). Skipping the new-version check."
+            exit 0
+          fi
 
           if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
             echo "::error::$NAME@$VERSION is already on npm. Bump the version in package.json."
