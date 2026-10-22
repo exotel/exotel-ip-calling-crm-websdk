@@ -1,0 +1,42 @@
+name: Version check
+
+# Fails a PR if its package.json version is already on npm or already tagged.
+# Published versions are never overwritten, so each release needs a new version.
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Check version is new
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fail if version already published or tagged
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "::error::$NAME@$VERSION is already on npm. Bump the version in package.json."
+            exit 1
+          fi
+
+          if [ -n "$(git ls-remote --tags origin "refs/tags/v$VERSION")" ]; then
+            echo "::error::Tag v$VERSION already exists. Bump the version in package.json."
+            exit 1
+          fi
+
+          echo "$NAME@$VERSION is new. OK."
