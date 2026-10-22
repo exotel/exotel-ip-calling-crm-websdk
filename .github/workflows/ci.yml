@@ -29,4 +29,3 @@ jobs:
 
       - name: Build (tsc + webpack bundle)
         run: npm run build:all
-

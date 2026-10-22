@@ -1,6 +1,6 @@
 {
   "name": "@exotel-npm-dev/exotel-ip-calling-crm-websdk",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "Exotel's crm websdk for IP calling integration",
   "main": "output/index.js",
   "types": "output/index.d.ts",
@@ -10,6 +10,16 @@
       "types": "./output/index.d.ts",
       "import": "./output/index.js",
       "default": "./output/index.js"
+    },
+    "./diagnostics": {
+      "types": "./output/diagnostics.d.ts",
+      "import": "./output/diagnostics.js",
+      "default": "./output/diagnostics.js"
+    },
+    "./logging": {
+      "types": "./output/logging.d.ts",
+      "import": "./output/logging.js",
+      "default": "./output/logging.js"
     },
     "./bundle": "./target/crmBundle.js",
     "./src/*": "./src/*",
@@ -27,7 +37,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"No test specified\" && exit 0",
     "build": "tsc",
     "bundle": "webpack --config webpack.config.js",
     "build:all": "npm run build && npm run bundle",
@@ -41,7 +51,7 @@
   "author": "Exotel",
   "license": "Apache-2.0",
   "dependencies": {
-    "@exotel-npm-dev/webrtc-client-sdk": "^3.0.4",
+    "@exotel-npm-dev/webrtc-client-sdk": "^3.0.17",
     "crypto-js": "^4.1.1",
     "uuid": "^10.0.0"
   },

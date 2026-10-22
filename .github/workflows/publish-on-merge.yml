@@ -1,0 +1,63 @@
+name: Stage npm publish on merge
+
+# Runs on every push to main. When package.json's version is not on npm yet,
+# stages it for publishing via trusted publishing (OIDC). Nothing goes live
+# until a maintainer approves the stage with `npm stage approve <stage-id>`
+# (2FA). Then run the "Release" workflow to tag and create the GitHub release.
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  stage:
+    name: Stage to npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install npm 12 (stage command)
+        run: npm install -g npm@12.2.1
+
+      - name: Check whether this version is already on npm
+        id: check
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION is already on npm. Nothing to stage."
+          else
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION is new. Staging."
+          fi
+
+      - name: Install deps
+        if: steps.check.outputs.published == 'true'
+        run: npm ci
+
+      - name: Build
+        if: steps.check.outputs.published == 'true'
+        run: npm run build:all
+
+      - name: Stage publish
+        if: steps.check.outputs.published == 'true'
+        run: npm stage publish
+
+      - name: Next step
+        if: steps.check.outputs.published == 'true'
+        run: |
+          echo "Staged. Approve in npm with: npm stage approve <stage-id> (2FA)."
+          echo "Then run the Release workflow with the version."
