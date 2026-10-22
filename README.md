@@ -138,16 +138,20 @@ const crmWebSDK = new ExotelCRMWebSDK(accessToken, userId, true);
   
   Returns:
   
-  Promise<ExotelWebPhoneSDK | void>: A promise that resolves to an instance of ExotelWebPhoneSDK if successful, or void if unsuccessful.
+  Promise<ExotelWebPhoneSDK>: resolves to an instance of ExotelWebPhoneSDK. Rejects with an Error if the settings fail to load or no SIP info is available. Wrap the call in try/catch.
   
   
 ## 4. Initialize method
 
-Use the `Initialize` method on the `ExotelCRMWebSDK` object which returns Promise that resolves to `ExotelWebPhoneSDK` object.
+Use the `Initialize` method on the `ExotelCRMWebSDK` object. It returns a Promise that resolves to the `ExotelWebPhoneSDK` object. It rejects on failure (for example, when settings cannot be loaded or no SIP info is available), so handle the error.
     `ExotelCRMWebSDK` does all the work to get necessary details required for the `ExotelWebPhoneSDK`
 
 ```javascript
-const crmWebPhone = await crmWebSDK.Initialize(HandleCallEvents, RegisterationEvent);
+try {
+  const crmWebPhone = await crmWebSDK.Initialize(HandleCallEvents, RegisterationEvent);
+} catch (error) {
+  // Initialization failed; the error explains why.
+}
 ```
 
 You must pass call events handler, registeration event handler (optional) and session callback handler (optional) to the `Initialize` method
