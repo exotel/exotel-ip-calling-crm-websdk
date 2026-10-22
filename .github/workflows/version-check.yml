@@ -25,6 +25,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+
+      # npm pack runs the prepare script, which needs the dev dependencies (tsc).
+      - name: Install deps
+        run: npm ci --ignore-scripts
 
       - name: Fail if version already published or tagged
         env:

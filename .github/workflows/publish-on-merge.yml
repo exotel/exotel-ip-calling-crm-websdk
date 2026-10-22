@@ -33,6 +33,10 @@ jobs:
       - name: Install npm 12 (stage command)
         run: npm install -g npm@12.2.1
 
+      # npm pack runs the prepare script, which needs the dev dependencies (tsc).
+      - name: Install deps for packing
+        run: npm ci --ignore-scripts
+
       - name: Check whether this version is already on npm
         id: check
         env:
