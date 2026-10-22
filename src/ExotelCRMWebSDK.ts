@@ -4,6 +4,19 @@ import { SIPAccountInfo } from "./SipAccountInfo";
 import ExotelWebPhoneSDK from "./ExotelWebPhoneSDK";
 
 /**
+ * SIP.js takes the WebSocket port from domain.split(":")[1] and falls back
+ * to 8089 when that segment is missing. Keep an existing numeric port.
+ */
+function withWssPort(host: string): string {
+  const value = host.trim();
+  const colon = value.lastIndexOf(":");
+  if (colon > 0 && /^\d+$/.test(value.slice(colon + 1))) {
+    return value;
+  }
+  return `${value}:443`;
+}
+
+/**
  * Dashboard softphone context. Omitted for CRM callers, who keep the
  * hardcoded registrar and the app's ExotelAccountSid.
  */
@@ -188,8 +201,7 @@ export default class ExotelCRMWebSDK {
       userName: this.#userData.sipId.split(":")[1], // sipInfo.Username,
       authUser: this.#userData.sipId.split(":")[1], //sipInfo.Username,
       sipdomain: accountSid + "." + voipDomainSIP, //sipInfo.Domain,
-      // voipDomain already includes ":443" (see Constants.ts)
-      domain: wssDomain, // sipInfo.HostServer + ":" + sipInfo.Port,
+      domain: withWssPort(wssDomain), // sipInfo.HostServer + ":" + sipInfo.Port,
       displayname: this.#userData.exotelUserName, //sipInfo.DisplayName,
       secret: this.#userData.sipSecret, //sipInfo.Password,
       port: "443", //sipInfo.Port,
